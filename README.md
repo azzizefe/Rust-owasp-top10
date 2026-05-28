@@ -1,26 +1,20 @@
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/tr/0/05/%C4%B0stinye_%C3%9Cniversitesi_logo.png" alt="İstinye Üniversitesi Logo" width="250">
+  <img src="docs/isu_logo.png" alt="İstinye Üniversitesi Logo" width="400">
   <br><br>
   
   # 🛡️ Web Güvenliği Dersi Final Projesi
   ## Rust OWASP Top 10 (2026 Next-Gen) Laboratuvarı
 
   **İstinye Üniversitesi - Web Güvenliği Final Projesi**<br>
-  **Danışman:** Dr. Öğr. Üyesi Keyvan Arasteh
+  **Danışman:** Keyvan Arasteh
   
   <br>
-  <img src="docs/banner.png" alt="Cyber Security Banner" width="100%">
 </div>
 
 ---
 
-## 🏛️ İstinye Üniversitesi Hakkında
-**İstinye Üniversitesi**, "Liv Hospital", "Medical Park" ve "VM Medical Park" olmak üzere üç ayrı hastane markasını tek çatı altında buluşturan MLP Care Grubu'nun bilgi birikimi ve tecrübesiyle 2015 yılında İstanbul'da kurulmuş köklü bir vakıf üniversitesidir. Güçlü akademik kadrosu, modern teknolojik altyapısı ve yapay zeka/siber güvenlik gibi alanlara verdiği önemle geleceğin mühendislerini ve araştırmacılarını yetiştirmeyi vizyon edinmiştir. Bu proje, üniversitenin yenilikçi eğitim vizyonuna uygun olarak geliştirilmiş ileri düzey bir siber güvenlik çalışmasıdır.
-
----
-
 ## 🚀 Projenin Amacı ve Mantığı
-Bu proje, en güncel **OWASP Top 10 (2025/2026)** siber güvenlik standartlarını, performans ve bellek güvenliği ile öne çıkan **Rust (Axum, SQLx, Postgres)** teknolojileri kullanarak hem **zafiyetli (Vulnerable)** hem de **güvenli (Secure)** modlarda gösteren dinamik bir güvenlik laboratuvarıdır.
+Bu proje, en güncel **OWASP Top 10 (2026/2027)** siber güvenlik standartlarını, performans ve bellek güvenliği ile öne çıkan **Rust (Axum, SQLx, Postgres)** teknolojileri kullanarak hem **zafiyetli (Vulnerable)** hem de **güvenli (Secure)** modlarda gösteren dinamik bir güvenlik laboratuvarıdır.
 
 Sistemin temel mantığı **"Önce Açığı Göster, Sonra Korumayı Kanıtla"** prensibine dayanır. Sistem tek bir kod tabanı üzerinden çevre değişkenine (Environment Variable) bağlı olarak iki tamamen farklı mimari güvenlik duruşuna geçiş yapabilir. 
 
