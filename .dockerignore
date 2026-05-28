@@ -1,1 +1,8 @@
-﻿
+target/
+**/target/
+.git/
+.env
+docs/
+exploits/
+tests/
+*.ps1
