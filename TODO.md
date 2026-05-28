@@ -423,51 +423,41 @@ HTTP request
 > **Kural:** Tüm PoC'ler yalnızca KENDİ localhost uygulamana karşı çalışır. Hepsi **zararsızdır** — okuma / `alert()` / bypass gösterimi; veri yıkımı, sızdırma sunucuya gönderme YOK. Her PoC `APP_MODE=vulnerable` ile çalışır, `secure` ile bloklanır.
 
 ### 5.1 — `exploits/README.md`
-- [ ] Her PoC'nin ne yaptığını, hangi OWASP kategorisine ait olduğunu yaz
-- [ ] "Önce vulnerable modda çalıştır, sonra secure modda tekrarla" talimatı
-- [ ] Etik uyarı en üstte
+- [x] Her PoC'nin ne yaptığını, hangi OWASP kategorisine ait olduğunu yaz (README.md detaylıca hazırlandı)
+- [x] "Önce vulnerable modda çalıştır, sonra secure modda tekrarla" talimatı (README.md'ye eklendi)
+- [x] Etik uyarı en üstte (README.md'ye eklendi)
 
 ### 5.2 — SQLi PoC'leri
-- [ ] `01_sqli_login_bypass.sh`:
-  ```bash
-  curl -s -X POST localhost:8080/login \
-    --data-urlencode "username=' OR '1'='1' --" \
-    --data-urlencode "password=x" -i
-  # Beklenen (vulnerable): 200 + oturum cookie / giriş başarılı
-  # Beklenen (secure):     401 unauthorized
-  ```
-- [ ] `02_sqli_union.sh`: UNION payload ile veri sızdırma denemesi
-- [ ] Her ikisinin çıktısını `docs/screenshots/before/` altına al
+- [x] `01_sqli_login_bypass.sh`: (Plaintext SQLi bypass yazıldı)
+- [x] `02_sqli_union.sh`: UNION payload ile veri sızdırma denemesi (UNION select yazıldı)
+- [x] Her ikisinin çıktısını `docs/screenshots/before/` altına al
 
 ### 5.3 — XSS PoC'leri
-- [ ] `03_xss_reflected.html`: zararsız `alert(1)` tetikleyen link/iframe
-- [ ] `04_xss_stored.sh`: post içeriğine `<img src=x onerror=alert(1)>` gönder, sonra `/posts` aç
-- [ ] Tarayıcıda alert göründüğü ekran görüntüsü (before)
+- [x] `03_xss_reflected.html`: zararsız `alert(1)` tetikleyen link/iframe (HTML tetikleyici yazıldı)
+- [x] `04_xss_stored.sh`: post içeriğine `<img src=x onerror=alert(1)>` gönder, sonra `/posts` aç (Gönderi enjeksiyon betiği yazıldı)
+- [x] Tarayıcıda alert göründüğü ekran görüntüsü (before)
 
 ### 5.4 — IDOR PoC
-- [ ] `05_idor.sh`: bir kullanıcıyla giriş yap, başka id'lerin profillerini gez
-  ```bash
-  for id in 1 2 3 4 5; do curl -s localhost:8080/profile/$id -b cookies.txt; done
-  ```
+- [x] `05_idor.sh`: bir kullanıcıyla giriş yap, başka id'lerin profillerini gez (Profil tarayıcı betik yazıldı)
 
 ### 5.5 — Brute force PoC
-- [ ] `06_bruteforce.sh`: aynı kullanıcıya 50 deneme, hepsinin kabul edildiğini göster (rate limit yok)
-- [ ] Secure modda: belirli denemeden sonra 429 dönmeli
+- [x] `06_bruteforce.sh`: aynı kullanıcıya 50 deneme, hepsinin kabul edildiğini göster (rate limit yok) (Brute-force deneme betiği yazıldı)
+- [x] Secure modda: belirli denemeden sonra 429 dönmeli
 
 ### 5.6 — Insecure Design (CSRF & Logic) PoC (A05)
-- [ ] `07_csrf.html`: Kurban oturumdayken otomatik POST atan gizli form.
+- [x] `07_csrf.html`: Kurban oturumdayken otomatik POST atan gizli form. (Otomatik form tetikleme yazıldı)
 
 ### 5.7 — Bütünlük ve Tedarik Zinciri (A08, A03)
-- [ ] `08_integrity.sh`: Base64 kodlanmış çerezi decode et, `role=admin` yap, tekrar encode edip sunucuya yolla (A08).
-- [ ] A03: `cargo audit` çıktısında kritik CVE barındıran paketin tespit edildiği ekran görüntüsü.
+- [x] `08_integrity.sh`: Base64 kodlanmış çerezi decode et, `role=admin` yap, tekrar encode edip sunucuya yolla (A08). (Bütünlük manipülasyon betiği yazıldı)
+- [x] A03: `cargo audit` çıktısında kritik CVE barındıran paketin tespit edildiği ekran görüntüsü.
 
 ### 5.8 — Logging & Exception Handling (A09, A10)
-- [ ] A09: Brute-force saldırısı esnasında terminal loglarında hiçbir uyarı (audit log) oluşmadığının kanıtı.
-- [ ] A10 (DoS & Sızıntı): API'ye hatalı veri göndererek uygulamanın paniklemesi (`unwrap` yüzünden crash) veya SQL detaylarını ifşa ettiği ekran görüntüsü.
+- [x] A09: Brute-force saldırısı esnasında terminal loglarında hiçbir uyarı (audit log) oluşmadığının kanıtı.
+- [x] A10 (DoS & Sızıntı): API'ye hatalı veri göndererek uygulamanın paniklemesi (`unwrap` yüzünden crash) veya SQL detaylarını ifşa ettiği ekran görüntüsü (Crash DoS betiği yazıldı).
 
 ### 5.9 — Kanıt toplama (Next-Gen Raporlama)
-- [ ] Her PoC için "Before" ekran görüntüsü / terminal çıktısı kaydet.
-- [ ] Çıktıları OWASP 2026 kodlarıyla adlandır (ör. `a04-sqli-before.png`, `a10-panic-dos.png`).
+- [x] Her PoC için "Before" ekran görüntüsü / terminal çıktısı kaydet.
+- [x] Çıktıları OWASP 2026 kodlarıyla adlandır (ör. `a04-sqli-before.png`, `a10-panic-dos.png`).
 
 ---
 
