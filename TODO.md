@@ -378,42 +378,42 @@ HTTP request
 > `// ⚠️ VULNERABLE — OWASP AXX:2026 — eğitim amaçlı, ASLA production'da kullanma. Güvenli sürüm: secure.rs`
 
 ### 4.1 — A01:2026 → Broken Access Control & SSRF
-- [ ] **IDOR (Erişim Kontrolü Kırılması):** `GET /profile/:id` endpoint'i başkasının verisini okumaya (yetkisiz) izin verir.
-- [ ] **SSRF (Sunucu Taraflı İstek Sahteciliği):** Kullanıcının URL vererek tetiklediği dış istek, doğrulanmadan `127.0.0.1` veya AWS Metadata IP'sine yönlendirilebilir.
+- [x] **IDOR (Erişim Kontrolü Kırılması):** `GET /profile/:id` endpoint'i başkasının verisini okumaya (yetkisiz) izin verir.
+- [x] **SSRF (Sunucu Taraflı İstek Sahteciliği):** Kullanıcının URL vererek tetiklediği dış istek, doğrulanmadan `127.0.0.1` veya AWS Metadata IP'sine yönlendirilebilir.
 
 ### 4.2 — A02:2026 → Cryptographic Failures
-- [ ] **Hassas Veri İfşası:** Kullanıcıların gizli notları veya API anahtarları veritabanında plaintext (şifresiz) tutulur.
-- [ ] **Zayıf Kriptografi:** Şifre sıfırlama veya oturum token'ı için kriptografik olmayan `rand::random` kullanımı. HTTP'den HTTPS'e zorlama olmaması (HSTS eksikliği).
+- [x] **Hassas Veri İfşası:** Kullanıcıların gizli notları veya API anahtarları veritabanında plaintext (şifresiz) tutulur.
+- [x] **Zayıf Kriptografi:** Şifre sıfırlama veya oturum token'ı için kriptografik olmayan `rand::random` kullanımı. HTTP'den HTTPS'e zorlama olmaması (HSTS eksikliği).
 
 ### 4.3 — A03:2026 → Software Supply Chain Failures (Yeni Nesil Tehdit)
-- [ ] **Zafiyetli Bağımlılık:** Bilinen bir CVE'ye sahip kasıtlı eski bir kütüphane eklenmesi (`cargo audit` ile tespit demosu için).
-- [ ] **Build Zehirlenmesi:** Kötü niyetli bir bağımlılığın `build.rs` üzerinden çevre değişkenlerini sızdırma potansiyelinin simülasyonu.
+- [x] **Zafiyetli Bağımlılık:** Bilinen bir CVE'ye sahip kasıtlı eski bir kütüphane eklenmesi (`cargo audit` ile tespit demosu için).
+- [x] **Build Zehirlenmesi:** Kötü niyetli bir bağımlılığın `build.rs` üzerinden çevre değişkenlerini sızdırma potansiyelinin simülasyonu.
 
 ### 4.4 — A04:2026 → Injection (SQLi, XSS)
-- [ ] **SQL Injection (Login Bypass):** `VulnerableAuth::login` içinde `format!` makrosuyla kullanıcı girdisi doğrudan SQL string'ine gömülür. Payload: `' OR '1'='1' --`
-- [ ] **Cross-Site Scripting:** Arama kutusunda HTML escape edilmeden HTML render edilir (Reflected). Post içerikleri temizlenmeden DB'ye yazılır (Stored XSS).
+- [x] **SQL Injection (Login Bypass):** `VulnerableAuth::login` içinde `format!` makrosuyla kullanıcı girdisi doğrudan SQL string'ine gömülür. Payload: `' OR '1'='1' --`
+- [x] **Cross-Site Scripting:** Arama kutusunda HTML escape edilmeden HTML render edilir (Reflected). Post içerikleri temizlenmeden DB'ye yazılır (Stored XSS).
 
 ### 4.5 — A05:2026 → Insecure Design
-- [ ] **İş Mantığı Zafiyeti:** Hassas işlemlerde (şifre değiştirme) `re-authentication` (tekrar parola sorma) istenmemesi.
-- [ ] **CSRF:** State değiştiren POST'larda (profil güncelleme) CSRF token eksikliği (`07_csrf.html` tetikleyici).
+- [x] **İş Mantığı Zafiyeti:** Hassas işlemlerde (şifre değiştirme) `re-authentication` (tekrar parola sorma) istenmemesi.
+- [x] **CSRF:** State değiştiren POST'larda (profil güncelleme) CSRF token eksikliği (`07_csrf.html` tetikleyici).
 
 ### 4.6 — A06:2026 → Security Misconfiguration
-- [ ] **Güvenlik Kalkanları Eksikliği:** `CSP`, `X-Frame-Options`, `X-Content-Type-Options` gibi temel header'ların olmaması.
-- [ ] **Açık Yüzeyler:** Debug endpoint'lerinin (`/api/debug`) production'da kasıtlı erişilebilir bırakılması.
+- [x] **Güvenlik Kalkanları Eksikliği:** `CSP`, `X-Frame-Options`, `X-Content-Type-Options` gibi temel header'ların olmaması.
+- [x] **Açık Yüzeyler:** Debug endpoint'lerinin (`/api/debug`) production'da kasıtlı erişilebilir bırakılması.
 
 ### 4.7 — A07:2026 → Identification and Authentication Failures
-- [ ] **Zayıf Parola Saklama:** Şifreler düz metin (veya kırılmış `MD5`) olarak tutulur.
-- [ ] **Brute-Force & Enumeration:** Rate limit olmaması ve "Kullanıcı yok" ile "Şifre yanlış" mesajlarının farklı verilerek geçerli kullanıcı hesaplarının ifşa edilmesi.
+- [x] **Zayıf Parola Saklama:** Şifreler düz metin (veya kırılmış `MD5`) olarak tutulur.
+- [x] **Brute-Force & Enumeration:** Rate limit olmaması ve "Kullanıcı yok" ile "Şifre yanlış" mesajlarının farklı verilerek geçerli kullanıcı hesaplarının ifşa edilmesi.
 
 ### 4.8 — A08:2026 → Software and Data Integrity Failures
-- [ ] **Güvensiz Deserialization:** Kullanıcı yetkisi `{"role":"user"}` şeklinde şifrelenmemiş ve imzasız bir Base64 cookie olarak saklanır (Saldırgan bunu admin yapar).
+- [x] **Güvensiz Deserialization:** Kullanıcı yetkisi `{"role":"user"}` şeklinde şifrelenmemiş ve imzasız bir Base64 cookie olarak saklanır (Saldırgan bunu admin yapar).
 
 ### 4.9 — A09:2026 → Security Logging and Monitoring Failures
-- [ ] **Sessiz İhlaller:** Hatalı giriş denemeleri, yetki ihlalleri (403) hiçbir şekilde loglanmaz. Saldırgan brute-force yaparken sunucu iz bırakmaz.
+- [x] **Sessiz İhlaller:** Hatalı giriş denemeleri, yetki ihlalleri (403) hiçbir şekilde loglanmaz. Saldırgan brute-force yaparken sunucu iz bırakmaz.
 
 ### 4.10 — A10:2026 → Mishandling of Exceptional Conditions (Yeni!)
-- [ ] **Hata Yönetimi Zafiyeti (Fail Open / Crash):** Hatalı veri geldiğinde Rust'ın `.unwrap()` metodu kasten kullanılarak uygulamanın *panic* olmasına (DoS) sebep olunur.
-- [ ] **Bilgi Sızıntısı:** Veritabanı hataları (`Err(e)`) doğrudan kullanıcıya HTTP response olarak stack trace / SQL detaylarıyla döner.
+- [x] **Hata Yönetimi Zafiyeti (Fail Open / Crash):** Hatalı veri geldiğinde Rust'ın `.unwrap()` metodu kasten kullanılarak uygulamanın *panic* olmasına (DoS) sebep olunur.
+- [x] **Bilgi Sızıntısı:** Veritabanı hataları (`Err(e)`) doğrudan kullanıcıya HTTP response olarak stack trace / SQL detaylarıyla döner.
 
 
 ---
