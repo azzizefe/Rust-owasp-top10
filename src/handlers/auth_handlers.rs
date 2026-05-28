@@ -106,7 +106,12 @@ pub async fn login(
                     "Kullanıcı adı veya şifre hatalı.".to_string()
                 }
             };
-            LoginTemplate { error: Some(err_msg) }.into_response()
+            
+            if state.mode == AppMode::Secure {
+                (StatusCode::UNAUTHORIZED, LoginTemplate { error: Some(err_msg) }).into_response()
+            } else {
+                LoginTemplate { error: Some(err_msg) }.into_response()
+            }
         }
     }
 }

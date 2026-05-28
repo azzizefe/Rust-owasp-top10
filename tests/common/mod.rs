@@ -35,14 +35,12 @@ pub async fn spawn_app(mode: AppMode) -> TestApp {
         session_secret: "test_session_secret_32_bytes_long_12345".to_string(),
     };
 
-    // 4. Rastgele bir port dinle
-    let listener = TcpListener::bind("127.0.0.1:0")
+    // 4. Rastgele bir port dinle (Tokio native async)
+    let tokio_listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
         .expect("Rastgele porta bağlanılamadı");
-    let port = listener.local_addr().unwrap().port();
+    let port = tokio_listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
-
-    let tokio_listener = tokio::net::TcpListener::from_std(listener)
-        .expect("TcpListener tokio'ya dönüştürülemedi");
 
     // 5. Router'ı oluştur ve arka planda tokio ile ayağa kaldır
     let router = create_router(state);

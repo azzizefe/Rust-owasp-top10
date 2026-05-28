@@ -27,12 +27,19 @@ impl SecureAuth {
 impl AuthBackend for SecureAuth {
     // ✅ SECURE: Güçlü Argon2id Parola Hashleme (OWASP A07:2026) ve Parameterized SQLi Koruması (OWASP A04:2026)
     async fn register(&self, form: RegisterForm) -> Result<i64, ApiError> {
-        // Argon2id ile güçlü, salt'lı hash üretimi
-        let salt = SaltString::generate(&mut OsRng);
-        let password_hash = Argon2::default()
-            .hash_password(form.password.as_bytes(), &salt)
-            .map_err(|e| ApiError::Internal(e.to_string()))?
-            .to_string();
+        let password = form.password.clone();
+        
+        // Argon2id ile güçlü, salt'lı hash üretimini spawn_blocking ile asenkron havuzda yapıyoruz
+        // Bu sayede CPU-intensive hash işlemi asenkron executor'ı bloke etmez!
+        let password_hash = tokio::task::spawn_blocking(move || {
+            let salt = SaltString::generate(&mut OsRng);
+            Argon2::default()
+                .hash_password(password.as_bytes(), &salt)
+                .map(|h| h.to_string())
+                .map_err(|e| ApiError::Internal(e.to_string()))
+        })
+        .await
+        .map_err(|e| ApiError::Internal(e.to_string()))??;
 
         // Parametreli sorgu ($1, $2, $3) girdiyi SQL yapısından ayırır (SQLi Engeli)
         let row = sqlx::query!(
@@ -61,26 +68,39 @@ impl AuthBackend for SecureAuth {
         // Eğer kullanıcı yoksa bile sahte bir Argon2id doğrulaması çalıştırarak
         // saldırganın geçerli/geçersiz kullanıcı analizini yapmasını engelliyoruz!
         if user_opt.is_none() {
-            let dummy_hash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$dGVzdHBhc3N3b3JkZHVtbXloYXNo";
-            let parsed_hash = PasswordHash::new(dummy_hash).map_err(|_| ApiError::Unauthorized)?;
-            let _ = Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash);
+            let password = form.password.clone();
+            let _ = tokio::task::spawn_blocking(move || {
+                let dummy_hash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$dGVzdHBhc3N3b3JkZHVtbXloYXNo";
+                if let Ok(parsed_hash) = PasswordHash::new(dummy_hash) {
+                    let _ = Argon2::default().verify_password(password.as_bytes(), &parsed_hash);
+                }
+            })
+            .await;
+            
             warn!("🔒 GÜVENLİK AUDIT: Oturum açma başarısız (Kullanıcı bulunamadı) - IP/Rate-limit izlemesi etkin.");
             return Err(ApiError::Unauthorized);
         }
 
         let user = user_opt.expect("Kullanıcı varlığı doğrulandı");
+        let password = form.password.clone();
+        let password_hash_str = user.password_hash.clone();
 
-        // Parola hash doğrulaması
-        let parsed_hash = PasswordHash::new(&user.password_hash)
-            .map_err(|e| {
-                tracing::error!("Parola hash parse hatası: {:?}", e);
-                ApiError::Unauthorized
-            })?;
+        // Parola hash doğrulaması spawn_blocking içinde yapılarak ana asenkron kanal rahatlatılır
+        let verify_res = tokio::task::spawn_blocking(move || {
+            let parsed_hash = PasswordHash::new(&password_hash_str)
+                .map_err(|e| {
+                    tracing::error!("Parola hash parse hatası: {:?}", e);
+                    ApiError::Unauthorized
+                })?;
 
-        if Argon2::default()
-            .verify_password(form.password.as_bytes(), &parsed_hash)
-            .is_err()
-        {
+            Argon2::default()
+                .verify_password(password.as_bytes(), &parsed_hash)
+                .map_err(|_| ApiError::Unauthorized)
+        })
+        .await
+        .map_err(|e| ApiError::Internal(e.to_string()))?;
+
+        if verify_res.is_err() {
             warn!("🔒 GÜVENLİK AUDIT: Yanlış şifre denemesi. Kullanıcı: {}", user.username);
             return Err(ApiError::Unauthorized);
         }
