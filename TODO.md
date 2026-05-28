@@ -249,7 +249,7 @@ HTTP request
 ### 2.2 — Şema migration'ları
 
 #### `migrations/0001_create_users.sql`
-- [ ] ```sql
+- [x] ```sql
   CREATE TABLE users (
       id            BIGSERIAL PRIMARY KEY,
       username      TEXT NOT NULL UNIQUE,
@@ -259,10 +259,10 @@ HTTP request
       created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
   );
   ```
-- [ ] `username` üzerinde UNIQUE constraint (kayıt çakışması)
+- [x] `username` üzerinde UNIQUE constraint (kayıt çakışması)
 
 #### `migrations/0002_create_sessions.sql`
-- [ ] ```sql
+- [x] ```sql
   CREATE TABLE sessions (
       token      TEXT PRIMARY KEY,         -- kriptografik rastgele
       user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -272,7 +272,7 @@ HTTP request
   ```
 
 #### `migrations/0003_create_posts.sql`
-- [ ] ```sql
+- [x] ```sql
   CREATE TABLE posts (
       id         BIGSERIAL PRIMARY KEY,
       author_id  BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
