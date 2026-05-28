@@ -2,7 +2,6 @@
 
 #![warn(clippy::unwrap_used, clippy::expect_used)]
 
-use std::net::SocketProvider;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 

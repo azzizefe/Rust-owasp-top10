@@ -313,7 +313,7 @@ HTTP request
 ## 🏗️ Faz 3 — Uygulama İskeleti & Mod Anahtarı
 
 ### 3.1 — Hata tipi (`src/error.rs`)
-- [ ] ```rust
+- [x] ```rust
   #[derive(thiserror::Error, Debug)]
   pub enum ApiError {
       #[error("bad request")] BadRequest(String),
@@ -324,50 +324,50 @@ HTTP request
       #[error("internal error")] Internal,   // iç detay ASLA dışarı sızmaz
   }
   ```
-- [ ] `impl IntoResponse for ApiError` → her varyant doğru HTTP status + generic JSON gövde
-- [ ] **Kritik (A05):** `Internal` varyantı kullanıcıya stack trace / SQL hatası göstermez; detay yalnızca `tracing::error!` ile loglanır
-- [ ] `From<sqlx::Error>` impl'i → DB hatasını `Internal`'a çevir, orijinali logla
+- [x] `impl IntoResponse for ApiError` → her varyant doğru HTTP status + generic JSON gövde
+- [x] **Kritik (A05):** `Internal` varyantı kullanıcıya stack trace / SQL hatası göstermez; detay yalnızca `tracing::error!` ile loglanır
+- [x] `From<sqlx::Error>` impl'i → DB hatasını `Internal`'a çevir, orijinali logla
 
 ### 3.2 — Modeller (`src/models.rs`)
-- [ ] `#[derive(sqlx::FromRow)] struct User { id, username, password_hash, email, role, created_at }`
-- [ ] `struct Session { token, user_id, expires_at }`
-- [ ] `struct Post { id, author_id, content, created_at }`
-- [ ] Form tipleri (`#[derive(Deserialize)]`):
-  - [ ] `RegisterForm { username, password, email }`
-  - [ ] `LoginForm { username, password }`
-  - [ ] `SearchQuery { q: String }`
-  - [ ] `NewPost { content: String }`
-- [ ] Validasyon yardımcıları (secure modda kullanılacak): username uzunluk/karakter, email format, password min uzunluk
+- [x] `#[derive(sqlx::FromRow)] struct User { id, username, password_hash, email, role, created_at }`
+- [x] `struct Session { token, user_id, expires_at }`
+- [x] `struct Post { id, author_id, content, created_at }`
+- [x] Form tipleri (`#[derive(Deserialize)]`):
+  - [x] `RegisterForm { username, password, email }`
+  - [x] `LoginForm { username, password }`
+  - [x] `SearchQuery { q: String }`
+  - [x] `NewPost { content: String }`
+- [x] Validasyon yardımcıları (secure modda kullanılacak): username uzunluk/karakter, email format, password min uzunluk
 
 ### 3.3 — Auth trait (`src/auth/mod.rs`)
-- [ ] `#[async_trait] pub trait AuthBackend: Send + Sync { ... }` (login/register/find_user/create_post/search_posts)
-- [ ] `pub fn build(mode: &AppMode, pool: PgPool) -> Arc<dyn AuthBackend>` fabrika
-  - [ ] `Vulnerable` → `Arc::new(VulnerableAuth { pool })`
-  - [ ] `Secure` → `Arc::new(SecureAuth { pool })`
+- [x] `#[async_trait] pub trait AuthBackend: Send + Sync { ... }` (login/register/find_user/create_post/search_posts)
+- [x] `pub fn build(mode: &AppMode, pool: PgPool) -> Arc<dyn AuthBackend>` fabrika
+  - [x] `Vulnerable` → `Arc::new(VulnerableAuth { pool })`
+  - [x] `Secure` → `Arc::new(SecureAuth { pool })`
 
 ### 3.4 — Router & state (`src/main.rs` + `routes.rs`)
-- [ ] `#[derive(Clone)] struct AppState { auth: Arc<dyn AuthBackend>, pool: PgPool, mode: AppMode }`
-- [ ] `routes.rs`: `Router::new().route(...)` ile tüm endpoint'ler
-  - [ ] `GET /` → ana sayfa
-  - [ ] `GET /register`, `POST /register`
-  - [ ] `GET /login`, `POST /login`, `POST /logout`
-  - [ ] `GET /profile/:id` → IDOR yüzeyi
-  - [ ] `GET /search` → reflected XSS yüzeyi
-  - [ ] `POST /posts`, `GET /posts` → stored XSS yüzeyi
-  - [ ] `GET /health` → 200 (test/uptime)
-- [ ] `main()`:
-  - [ ] tracing init
-  - [ ] config yükle
-  - [ ] db bağlan + migrate
-  - [ ] auth backend seç (mode'a göre)
-  - [ ] middleware uygula (secure modda tam, vulnerable modda eksik — bilinçli)
-  - [ ] `axum::serve` + graceful shutdown
-- [ ] **Başlangıç logunda modu açıkça yaz:** `WARN: running in VULNERABLE mode` (kazara unutma engeli)
+- [x] `#[derive(Clone)] struct AppState { auth: Arc<dyn AuthBackend>, pool: PgPool, mode: AppMode }`
+- [x] `routes.rs`: `Router::new().route(...)` ile tüm endpoint'ler
+  - [x] `GET /` → ana sayfa
+  - [x] `GET /register`, `POST /register`
+  - [x] `GET /login`, `POST /login`, `POST /logout`
+  - [x] `GET /profile/:id` → IDOR yüzeyi
+  - [x] `GET /search` → reflected XSS yüzeyi
+  - [x] `POST /posts`, `GET /posts` → stored XSS yüzeyi
+  - [x] `GET /health` → 200 (test/uptime)
+- [x] `main()`:
+  - [x] tracing init
+  - [x] config yükle
+  - [x] db bağlan + migrate
+  - [x] auth backend seç (mode'a göre)
+  - [x] middleware uygula (secure modda tam, vulnerable modda eksik — bilinçli)
+  - [x] `axum::serve` + graceful shutdown
+- [x] **Başlangıç logunda modu açıkça yaz:** `WARN: running in VULNERABLE mode` (kazara unutma engeli)
 
 ### 3.5 — Template köprüsü (`src/templates.rs`)
-- [ ] askama struct'ları her sayfa için (`#[derive(Template)] #[template(path="...")]`)
-- [ ] **Not:** askama varsayılan auto-escape yapar → secure modda XSS savunması "bedava"
-- [ ] Vulnerable modda XSS göstermek için ham HTML enjeksiyon yolu (aşağıda 4.2)
+- [x] askama struct'ları her sayfa için (`#[derive(Template)] #[template(path="...")]`)
+- [x] **Not:** askama varsayılan auto-escape yapar → secure modda XSS savunması "bedava"
+- [x] Vulnerable modda XSS göstermek için ham HTML enjeksiyon yolu (aşağıda 4.2)
 
 
 ---
