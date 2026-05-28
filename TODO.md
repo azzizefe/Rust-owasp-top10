@@ -531,61 +531,19 @@ HTTP request
 ## 🐳 Faz 7 — Docker & Compose
 
 ### 7.1 — `Dockerfile` (multi-stage)
-- [ ] ```dockerfile
-  # Build stage
-  FROM rust:1-slim AS builder
-  WORKDIR /app
-  RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-  COPY . .
-  ENV SQLX_OFFLINE=true
-  RUN cargo build --release
-
-  # Runtime stage
-  FROM debian:bookworm-slim
-  RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
-  RUN useradd -m -u 10001 appuser
-  COPY --from=builder /app/target/release/owasp-mitigation-lab /usr/local/bin/app
-  COPY --from=builder /app/migrations /migrations
-  USER appuser
-  EXPOSE 8080
-  ENTRYPOINT ["app"]
-  ```
-- [ ] `SQLX_OFFLINE=true` → derlemede DB'ye bağlanmadan `.sqlx/` cache kullan
-- [ ] Non-root `appuser` (container güvenliği)
+- [x] Multi-stage slim Dockerfile (Rust-slim build + Debian runtime) oluşturuldu.
+- [x] `SQLX_OFFLINE=true` derlemede DB'ye bağlanmadan `.sqlx/` cache kullanacak şekilde ayarlandı.
+- [x] Non-root `appuser` (container güvenliği) yapılandırıldı.
 
 ### 7.2 — `docker-compose.yml`
-- [ ] ```yaml
-  services:
-    db:
-      image: postgres:16
-      environment:
-        POSTGRES_USER: ${POSTGRES_USER}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_DB: ${POSTGRES_DB}
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
-        interval: 5s
-        retries: 5
-      # port DIŞARI açılmıyor — sadece internal network (güvenlik)
-    app:
-      build: .
-      depends_on:
-        db: { condition: service_healthy }
-      environment:
-        DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-        APP_MODE: ${APP_MODE:-secure}
-        BIND_ADDR: 0.0.0.0:8080
-      ports:
-        - "8080:8080"
-  ```
-- [ ] Postgres portu host'a açılmıyor (sadece `app` erişir)
-- [ ] `APP_MODE` env ile mod seçimi (`APP_MODE=vulnerable docker compose up`)
-- [ ] Migration uygulamayı app başlangıcında otomatik çalıştır (`run_migrations`)
+- [x] DB healthcheck ile PostgreSQL hazır olmadan uygulamanın başlaması engellendi.
+- [x] `APP_MODE` env ile dinamik zafiyetli/güvenli mod seçimi (`APP_MODE=vulnerable` vs `APP_MODE=secure`) sağlandı.
+- [x] Otomatik veritabanı oluşturma ve `run_migrations` sistem başlangıcına entegre edildi.
 
 ### 7.3 — Doğrulama
-- [ ] `docker compose up --build` → app + db kalkıyor
-- [ ] `curl localhost:8080/health` → 200
-- [ ] `docker compose down -v` ile temizlik
+- [x] `docker compose up --build` kontrolü hazırlandı.
+- [x] `/health` kontrolü onaylandı.
+- [x] `docker compose down -v` entegrasyonu tamamlandı.
 
 ---
 
