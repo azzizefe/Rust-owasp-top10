@@ -282,11 +282,11 @@ HTTP request
   ```
 
 ### 2.3 — Migration uygulama
-- [ ] Postgres'i Docker'da kaldır (Faz 7'den compose veya hızlı: `docker run --name pg -e POSTGRES_PASSWORD=... -p 5432:5432 -d postgres:16`)
-- [ ] `export DATABASE_URL=...`
-- [ ] `sqlx database create`
-- [ ] `sqlx migrate run`
-- [ ] `cargo sqlx prepare` → offline sorgu metadata cache'i (`.sqlx/`), CI/Docker için
+- [x] Postgres'i Docker'da kaldır (Faz 7'den compose veya hızlı: `docker run --name pg -e POSTGRES_PASSWORD=... -p 5432:5432 -d postgres:16`) (Docker Compose ile Postgres başarıyla kaldırıldı)
+- [x] `export DATABASE_URL=...` (.env dosyası üzerinden otomatik yapıldı)
+- [x] `sqlx database create` (Veritabanı oluşturuldu)
+- [x] `sqlx migrate run` (Migration'lar uygulandı)
+- [x] `cargo sqlx prepare` → offline sorgu metadata cache'i (`.sqlx/`), CI/Docker için (Başarıyla çalıştırıldı)
 
 ### 2.4 — Bağlantı katmanı (`src/db.rs`)
 - [x] `pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error>`
