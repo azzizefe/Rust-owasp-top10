@@ -35,6 +35,7 @@ pub fn create_router(state: AppState) -> Router {
         // Post rotaları
         .route("/search", get(post_handlers::search_posts))
         .route("/posts", post(post_handlers::create_post))
+        .route("/fetch", get(post_handlers::fetch_url))
         
         .with_state(state)
 }
