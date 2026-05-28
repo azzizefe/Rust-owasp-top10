@@ -24,6 +24,8 @@ pub fn create_router(state: AppState) -> Router {
 
     // Temel router oluşturuluyor
     let mut router = Router::new()
+        // Ana sayfa yönlendirmesi
+        .route("/", get(|| async { axum::response::Redirect::to("/login") }))
         // Sağlık kontrolü
         .route("/health", get(health_check))
         // Kimlik doğrulama rotaları
