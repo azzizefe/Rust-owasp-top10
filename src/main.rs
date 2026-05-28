@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let listener = tokio::net::TcpListener::bind(&cfg.bind_addr).await?;
     info!("Sunucu başarıyla dinliyor: http://{}", cfg.bind_addr);
-    
+
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),

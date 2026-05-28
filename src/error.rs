@@ -45,7 +45,10 @@ impl IntoResponse for ApiError {
             ApiError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             ApiError::Forbidden => (StatusCode::FORBIDDEN, "Forbidden".to_string()),
             ApiError::NotFound => (StatusCode::NOT_FOUND, "Not Found".to_string()),
-            ApiError::RateLimited => (StatusCode::TOO_MANY_REQUESTS, "Too Many Requests".to_string()),
+            ApiError::RateLimited => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "Too Many Requests".to_string(),
+            ),
             ApiError::Internal(detailed_err) => {
                 // A05 & A10: Güvenli modda (Secure) iç hata detayı ASLA sızmaz.
                 // Zafiyetli modda (Vulnerable) ise stack trace / SQL detayı sızdırılır.

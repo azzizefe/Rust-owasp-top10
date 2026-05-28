@@ -28,7 +28,7 @@ impl AuthBackend for SecureAuth {
     // ✅ SECURE: Güçlü Argon2id Parola Hashleme (OWASP A07:2026) ve Parameterized SQLi Koruması (OWASP A04:2026)
     async fn register(&self, form: RegisterForm) -> Result<i64, ApiError> {
         let password = form.password.clone();
-        
+
         // Argon2id ile güçlü, salt'lı hash üretimini spawn_blocking ile asenkron havuzda yapıyoruz
         // Bu sayede CPU-intensive hash işlemi asenkron executor'ı bloke etmez!
         let password_hash = tokio::task::spawn_blocking(move || {
@@ -70,13 +70,14 @@ impl AuthBackend for SecureAuth {
         if user_opt.is_none() {
             let password = form.password.clone();
             let _ = tokio::task::spawn_blocking(move || {
-                let dummy_hash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$dGVzdHBhc3N3b3JkZHVtbXloYXNo";
+                let dummy_hash =
+                    "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$dGVzdHBhc3N3b3JkZHVtbXloYXNo";
                 if let Ok(parsed_hash) = PasswordHash::new(dummy_hash) {
                     let _ = Argon2::default().verify_password(password.as_bytes(), &parsed_hash);
                 }
             })
             .await;
-            
+
             warn!("🔒 GÜVENLİK AUDIT: Oturum açma başarısız (Kullanıcı bulunamadı) - IP/Rate-limit izlemesi etkin.");
             return Err(ApiError::Unauthorized);
         }
@@ -87,11 +88,10 @@ impl AuthBackend for SecureAuth {
 
         // Parola hash doğrulaması spawn_blocking içinde yapılarak ana asenkron kanal rahatlatılır
         let verify_res = tokio::task::spawn_blocking(move || {
-            let parsed_hash = PasswordHash::new(&password_hash_str)
-                .map_err(|e| {
-                    tracing::error!("Parola hash parse hatası: {:?}", e);
-                    ApiError::Unauthorized
-                })?;
+            let parsed_hash = PasswordHash::new(&password_hash_str).map_err(|e| {
+                tracing::error!("Parola hash parse hatası: {:?}", e);
+                ApiError::Unauthorized
+            })?;
 
             Argon2::default()
                 .verify_password(password.as_bytes(), &parsed_hash)
@@ -101,7 +101,10 @@ impl AuthBackend for SecureAuth {
         .map_err(|e| ApiError::Internal(e.to_string()))?;
 
         if verify_res.is_err() {
-            warn!("🔒 GÜVENLİK AUDIT: Yanlış şifre denemesi. Kullanıcı: {}", user.username);
+            warn!(
+                "🔒 GÜVENLİK AUDIT: Yanlış şifre denemesi. Kullanıcı: {}",
+                user.username
+            );
             return Err(ApiError::Unauthorized);
         }
 
@@ -113,7 +116,7 @@ impl AuthBackend for SecureAuth {
     // ✅ SECURE: Parametreli profil araması (SQLi engeli)
     async fn find_user(&self, id: i64) -> Result<User, ApiError> {
         let user = sqlx::query_as::<_, User>(
-            "SELECT id, username, password_hash, email, role, created_at FROM users WHERE id = $1"
+            "SELECT id, username, password_hash, email, role, created_at FROM users WHERE id = $1",
         )
         .bind(id)
         .fetch_one(&self.pool)
@@ -138,11 +141,11 @@ impl AuthBackend for SecureAuth {
     // ✅ SECURE: SQL Injection korumalı parametreli arama ve birleştirme sorgusu
     async fn search_posts(&self, query: &str) -> Result<Vec<(Post, String)>, ApiError> {
         let search_pattern = format!("%{}%", query);
-        
+
         let rows = sqlx::query_as::<_, (i64, i64, String, chrono::DateTime<chrono::Utc>, String)>(
             "SELECT p.id, p.author_id, p.content, p.created_at, u.username \
              FROM posts p JOIN users u ON p.author_id = u.id \
-             WHERE p.content LIKE $1"
+             WHERE p.content LIKE $1",
         )
         .bind(&search_pattern)
         .fetch_all(&self.pool)

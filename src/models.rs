@@ -59,7 +59,11 @@ impl RegisterForm {
         if self.username.len() < 3 || self.username.len() > 20 {
             return Err("Kullanıcı adı 3 ile 20 karakter arasında olmalıdır.".to_string());
         }
-        if !self.username.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        if !self
+            .username
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_')
+        {
             return Err("Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir.".to_string());
         }
 

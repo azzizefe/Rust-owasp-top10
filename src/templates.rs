@@ -1,7 +1,7 @@
 // src/templates.rs
 
-use askama::Template;
 use crate::models::{Post, User};
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "register.html")]

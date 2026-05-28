@@ -24,7 +24,7 @@ pub async fn create_session(
     let expires_at = Utc::now() + Duration::hours(expires_in_hours);
 
     let session = sqlx::query_as::<_, Session>(
-        "INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3) RETURNING *"
+        "INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3) RETURNING *",
     )
     .bind(&token)
     .bind(user_id)
@@ -37,13 +37,12 @@ pub async fn create_session(
 
 // Token üzerinden geçerli bir oturumu sorgular
 pub async fn get_session(pool: &PgPool, token: &str) -> Result<Option<(Session, User)>, ApiError> {
-    let session_opt = sqlx::query_as::<_, Session>(
-        "SELECT * FROM sessions WHERE token = $1 AND expires_at > $2"
-    )
-    .bind(token)
-    .bind(Utc::now())
-    .fetch_optional(pool)
-    .await?;
+    let session_opt =
+        sqlx::query_as::<_, Session>("SELECT * FROM sessions WHERE token = $1 AND expires_at > $2")
+            .bind(token)
+            .bind(Utc::now())
+            .fetch_optional(pool)
+            .await?;
 
     if let Some(session) = session_opt {
         let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")

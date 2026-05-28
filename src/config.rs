@@ -36,15 +36,15 @@ impl Config {
         let database_url = std::env::var("DATABASE_URL")
             .map_err(|_| "DATABASE_URL environment variable is missing!".to_string())?;
 
-        let bind_addr = std::env::var("BIND_ADDR")
-            .unwrap_or_else(|_| "0.0.0.0:8080".to_string());
+        let bind_addr = std::env::var("BIND_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".to_string());
 
         let mode_str = std::env::var("APP_MODE").unwrap_or_default();
         // Güvenli Varsayılan İlkesi (Secure by Default): Geçersiz veya eksikse 'Secure' mod seçilir
         let mode = AppMode::from_str(&mode_str).unwrap_or(AppMode::Secure);
 
-        let session_secret = std::env::var("SESSION_SECRET")
-            .unwrap_or_else(|_| "CHANGE_ME_64_RANDOM_BYTES_FOR_SESSION_SIGNING_AND_SECURITY_KEY".to_string());
+        let session_secret = std::env::var("SESSION_SECRET").unwrap_or_else(|_| {
+            "CHANGE_ME_64_RANDOM_BYTES_FOR_SESSION_SIGNING_AND_SECURITY_KEY".to_string()
+        });
 
         Ok(Config {
             database_url,

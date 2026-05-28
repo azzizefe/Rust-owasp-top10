@@ -6,7 +6,7 @@ use tracing::{error, info};
 
 pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error> {
     info!("Veritabanına bağlanılıyor...");
-    
+
     // Güvenli ve optimize bağlantı havuzu ayarları
     PgPoolOptions::new()
         .max_connections(20)
@@ -29,7 +29,7 @@ pub async fn run_migrations(pool: &PgPool) -> Result<(), sqlx::migrate::MigrateE
             error!("Migration hatası: {:?}", e);
             e
         })?;
-    
+
     info!("Veritabanı migration'ları başarıyla tamamlandı!");
     Ok(())
 }

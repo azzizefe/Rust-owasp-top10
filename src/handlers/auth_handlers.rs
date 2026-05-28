@@ -2,11 +2,10 @@
 
 use axum::{
     extract::State,
-    http::{header, HeaderMap, Response, StatusCode},
+    http::{header, HeaderMap, StatusCode},
     response::{IntoResponse, Redirect},
     Form,
 };
-use tracing::warn;
 
 use crate::config::AppMode;
 use crate::models::{LoginForm, RegisterForm};
@@ -24,7 +23,10 @@ pub async fn register(
     // SECURE MOD: Girdi doğrulama ve temizleme (OWASP A03:2026)
     if state.mode == AppMode::Secure {
         if let Err(err_msg) = form.validate() {
-            return RegisterTemplate { error: Some(err_msg) }.into_response();
+            return RegisterTemplate {
+                error: Some(err_msg),
+            }
+            .into_response();
         }
     }
 
@@ -37,7 +39,10 @@ pub async fn register(
             } else {
                 "Kayıt işlemi sırasında bir hata oluştu.".to_string()
             };
-            RegisterTemplate { error: Some(err_msg) }.into_response()
+            RegisterTemplate {
+                error: Some(err_msg),
+            }
+            .into_response()
         }
     }
 }
@@ -62,17 +67,13 @@ pub async fn login(
                         "id": session.user_id,
                         "role": "user"
                     });
-                    
+
                     // Base64 encode
                     use base64::Engine;
-                    let b64 = base64::engine::general_purpose::STANDARD.encode(
-                        cookie_json.to_string().as_bytes()
-                    );
-                    
-                    format!(
-                        "user_session={}; Path=/; HttpOnly; SameSite=Lax",
-                        b64
-                    )
+                    let b64 = base64::engine::general_purpose::STANDARD
+                        .encode(cookie_json.to_string().as_bytes());
+
+                    format!("user_session={}; Path=/; HttpOnly; SameSite=Lax", b64)
                 }
                 AppMode::Secure => {
                     // SECURE MOD: Güvenli, kriptografik rastgele DB session token'ı (OWASP A02:2026)
@@ -86,9 +87,8 @@ pub async fn login(
             let mut headers = HeaderMap::new();
             headers.insert(
                 header::SET_COOKIE,
-                header::HeaderValue::from_str(&cookie_str).unwrap_or_else(|_| {
-                    header::HeaderValue::from_static("")
-                }),
+                header::HeaderValue::from_str(&cookie_str)
+                    .unwrap_or_else(|_| header::HeaderValue::from_static("")),
             );
 
             (StatusCode::SEE_OTHER, headers, Redirect::to("/search")).into_response()
@@ -106,11 +106,20 @@ pub async fn login(
                     "Kullanıcı adı veya şifre hatalı.".to_string()
                 }
             };
-            
+
             if state.mode == AppMode::Secure {
-                (StatusCode::UNAUTHORIZED, LoginTemplate { error: Some(err_msg) }).into_response()
+                (
+                    StatusCode::UNAUTHORIZED,
+                    LoginTemplate {
+                        error: Some(err_msg),
+                    },
+                )
+                    .into_response()
             } else {
-                LoginTemplate { error: Some(err_msg) }.into_response()
+                LoginTemplate {
+                    error: Some(err_msg),
+                }
+                .into_response()
             }
         }
     }
@@ -126,16 +135,25 @@ pub async fn logout(State(state): State<AppState>, headers: HeaderMap) -> impl I
         }
         response_headers.insert(
             header::SET_COOKIE,
-            header::HeaderValue::from_static("session_token=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict"),
+            header::HeaderValue::from_static(
+                "session_token=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict",
+            ),
         );
     } else {
         response_headers.insert(
             header::SET_COOKIE,
-            header::HeaderValue::from_static("user_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax"),
+            header::HeaderValue::from_static(
+                "user_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax",
+            ),
         );
     }
 
-    (StatusCode::SEE_OTHER, response_headers, Redirect::to("/login")).into_response()
+    (
+        StatusCode::SEE_OTHER,
+        response_headers,
+        Redirect::to("/login"),
+    )
+        .into_response()
 }
 
 // Cookie ayrıştırma yardımcısı

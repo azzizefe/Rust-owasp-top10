@@ -515,85 +515,53 @@ HTTP request
 - [x] A06: Güvenlik header'larını (CSP, HSTS, NoSniff) Tower middleware ile zırhla. Debug route'ları kapat.
 
 ### 6.8 — A02 & A01 → Kriptografi ve Erişim (SSRF) Kalkanları
-- [x] A02: Hassas verileri DB'ye yazarken AES-GCM ile şifrele. Token'lar için `rand::rngs::OsRng` kullan.
-- [x] A01 (SSRF): Dışa istek atan endpoint'lerde URL'yi parse et, Localhost ve Private IP bloklarına erişimi strict şekilde blokla.
-
-### 6.9 — A08 → Yazılım ve Veri Bütünlüğü
-- [x] Cookie tabanlı state yönetimini HMAC imzalı `SignedCookie` (`axum-extra`) ile koru. İmzası tutmayan çerezleri anında reddet (Tampering koruması).
-
-### 6.10 — A09 & A10 → Loglama ve Kusursuz Hata Yönetimi (Rust'ın Gücü)
-- [x] A09: `tracing` ile başarısız login ve 403 hatalarına yapılandırılmış audit loglar bırak (`tracing::warn!("Bruteforce attempt from IP...")`).
-- [x] A10 (Exceptions): ASLA `.unwrap()` veya `.expect()` kullanma. Tüm hataları `Result` ile `ApiError` enum'unda karşıla (Fail Safe). API kullanıcılarına sadece statik "Internal Server Error" dön, orijinal hata detayını güvenli loga yaz.
-
-
----
-
-## 🐳 Faz 7 — Docker & Compose
-
-### 7.1 — `Dockerfile` (multi-stage)
-- [x] Multi-stage slim Dockerfile (Rust-slim build + Debian runtime) oluşturuldu.
-- [x] `SQLX_OFFLINE=true` derlemede DB'ye bağlanmadan `.sqlx/` cache kullanacak şekilde ayarlandı.
-- [x] Non-root `appuser` (container güvenliği) yapılandırıldı.
-
-### 7.2 — `docker-compose.yml`
-- [x] DB healthcheck ile PostgreSQL hazır olmadan uygulamanın başlaması engellendi.
-- [x] `APP_MODE` env ile dinamik zafiyetli/güvenli mod seçimi (`APP_MODE=vulnerable` vs `APP_MODE=secure`) sağlandı.
-- [x] Otomatik veritabanı oluşturma ve `run_migrations` sistem başlangıcına entegre edildi.
-
-### 7.3 — Doğrulama
-- [x] `docker compose up --build` kontrolü hazırlandı.
-- [x] `/health` kontrolü onaylandı.
-- [x] `docker compose down -v` entegrasyonu tamamlandı.
-
----
-
-## ✅ Faz 8 — Test & E2E (vulnerable + secure)
+- [x] A02: Hassas verileri DB'## ✅ Faz 8 — Test & E2E (vulnerable + secure)
 
 > Bu testler raporun **otomatik kanıtı**. "Önce açık vardı" ve "sonra kapandı" ikisini de assert eder.
 
 ### 8.1 — Test altyapısı (`tests/common/mod.rs`)
-- [ ] Belirli `APP_MODE` ile test sunucusu kaldıran yardımcı (`spawn_app(mode)`)
-- [ ] Her test izole geçici DB / şema (test çakışmasın)
-- [ ] `reqwest` client (cookie store açık)
+- [x] Belirli `APP_MODE` ile test sunucusu kaldıran yardımcı (`spawn_app(mode)`)
+- [x] Her test izole geçici DB / şema (test çakışmasın)
+- [x] `reqwest` client (cookie store açık)
 
 ### 8.2 — Birim testleri
-- [ ] argon2 hash → verify round-trip
-- [ ] `ammonia::clean` `<script>`'i atıyor, düz metni koruyor
-- [ ] Validasyon: geçersiz email/username reddediliyor
-- [ ] Session token uzunluk/rastgelelik (çakışma yok)
+- [x] argon2 hash → verify round-trip
+- [x] `ammonia::clean` `<script>`'i atıyor, düz metni koruyor
+- [x] Validasyon: geçersiz email/username reddediliyor
+- [x] Session token uzunluk/rastgelelik (çakışma yok)
 
 ### 8.3 — Vulnerable mod testleri (`tests/vulnerable_mode.rs`)
-- [ ] SQLi payload `' OR '1'='1' --` → **giriş başarılı** (açık kanıtlandı)
-- [ ] Reflected XSS: `?q=<script>` → yanıt gövdesinde **escape edilmemiş** `<script>` var
-- [ ] Stored XSS: post + listele → ham payload dönüyor
-- [ ] IDOR: başka id profili **erişilebilir**
-- [ ] Hata yanıtında iç detay (SQL/path) sızıyor
-- [ ] Brute force: 50 deneme hepsi işleniyor (429 yok)
+- [x] SQLi payload `' OR '1'='1' --` → **giriş başarılı** (açık kanıtlandı)
+- [x] Reflected XSS: `?q=<script>` → yanıt gövdesinde **escape edilmemiş** `<script>` var
+- [x] Stored XSS: post + listele → ham payload dönüyor
+- [x] IDOR: başka id profili **erişilebilir**
+- [x] Hata yanıtında iç detay (SQL/path) sızıyor
+- [x] Brute force: 50 deneme hepsi işleniyor (429 yok)
 
 ### 8.4 — Secure mod testleri (`tests/secure_mode.rs`)
-- [ ] Aynı SQLi payload → **401** (bloklandı)
-- [ ] Reflected XSS payload → yanıtta `&lt;script&gt;` (escape edildi)
-- [ ] CSP header **mevcut** (`assert response header contains`)
-- [ ] Güvenlik header'ları (nosniff, X-Frame-Options) mevcut
-- [ ] Stored XSS payload → sanitize/escape edilmiş
-- [ ] IDOR: başka id → **403**
-- [ ] Brute force → belirli denemeden sonra **429**
-- [ ] Hata yanıtı generic, iç detay YOK
-- [ ] Parola DB'de argon2 hash (düz metin değil) — DB satırını kontrol et
+- [x] Aynı SQLi payload → **401** (bloklandı)
+- [x] Reflected XSS payload → yanıtta `&lt;script&gt;` (escape edildi)
+- [x] CSP header **mevcut** (`assert response header contains`)
+- [x] Güvenlik header'ları (nosniff, X-Frame-Options) mevcut
+- [x] Stored XSS payload → sanitize/escape edilmiş
+- [x] IDOR: başka id → **403**
+- [x] Brute force → belirli denemeden sonra **429**
+- [x] Hata yanıtı generic, iç detay YOK
+- [x] Parola DB'de argon2 hash (düz metin değil) — DB satırını kontrol et
 
 ### 8.5 — Lint & statik analiz
-- [ ] `cargo fmt --all --check`
-- [ ] `cargo clippy --all-targets -- -D warnings`
-- [ ] `cargo audit` → bağımlılık CVE
-- [ ] (bonus) `cargo deny check` → lisans + ban listesi
+- [x] `cargo fmt --all --check`
+- [x] `cargo clippy --all-targets -- -D warnings`
+- [x] `cargo audit` → bağımlılık CVE
+- [x] (bonus) `cargo deny check` → lisans + ban listesi
 
 ---
 
 ## 🔄 Faz 9 — CI/CD (`.github/workflows/`)
 
 ### 9.1 — `ci.yml`
-- [ ] Trigger: `push`, `pull_request`
-- [ ] Postgres servis container'ı:
+- [x] Trigger: `push`, `pull_request`
+- [x] Postgres servis container'ı:
   ```yaml
   services:
     postgres:
@@ -603,23 +571,23 @@ HTTP request
       options: >-
         --health-cmd pg_isready --health-interval 5s --health-retries 5
   ```
-- [ ] Adımlar:
-  - [ ] `actions/checkout@v4`
-  - [ ] `dtolnay/rust-toolchain@stable` (clippy+rustfmt)
-  - [ ] `Swatinem/rust-cache@v2`
-  - [ ] `sqlx migrate run` (DATABASE_URL env ile)
-  - [ ] `cargo fmt --all --check`
-  - [ ] `cargo clippy --all-targets -- -D warnings`
-  - [ ] `cargo test` (vulnerable + secure e2e ikisi de)
-  - [ ] `cargo build --release`
+- [x] Adımlar:
+  - [x] `actions/checkout@v4`
+  - [x] `dtolnay/rust-toolchain@stable` (clippy+rustfmt)
+  - [x] `Swatinem/rust-cache@v2`
+  - [x] `sqlx migrate run` (DATABASE_URL env ile)
+  - [x] `cargo fmt --all --check`
+  - [x] `cargo clippy --all-targets -- -D warnings`
+  - [x] `cargo test` (vulnerable + secure e2e ikisi de)
+  - [x] `cargo build --release`
 
 ### 9.2 — `audit.yml` (zamanlanmış güvenlik taraması)
-- [ ] `cargo install cargo-audit`
-- [ ] `cargo audit` → CVE bulursa fail
-- [ ] (opsiyonel) haftalık `schedule` cron
+- [x] `cargo install cargo-audit`
+- [x] `cargo audit` → CVE bulursa fail
+- [x] (opsiyonel) haftalık `schedule` cron
 
 ### 9.3 — (opsiyonel) Docker build job
-- [ ] İmajı build et, smoke test (`/health` 200)
+- [x] İmajı build et, smoke test (`/health` 200)
 
 ---
 
@@ -628,9 +596,9 @@ HTTP request
 > Jüri/işveren öncelikle bunu okur. Tutarlı şablon = profesyonel izlenim.
 
 ### 10.1 — Rapor yapısı
-- [ ] **Yönetici özeti:** kaç zafiyet, hangi kategoriler, sonuç (hepsi kapatıldı)
-- [ ] **Kapsam & metodoloji:** nasıl test edildi (manuel PoC + otomatik e2e), ortam (izole localhost/Docker)
-- [ ] **Özet tablo (OWASP 2026 Standartları):**
+- [x] **Yönetici özeti:** kaç zafiyet, hangi kategoriler, sonuç (hepsi kapatıldı)
+- [x] **Kapsam & metodoloji:** nasıl test edildi (manuel PoC + otomatik e2e), ortam (izole localhost/Docker)
+- [x] **Özet tablo (OWASP 2026 Standartları):**
   | OWASP | Zafiyet Adı | Konum | Sömürü (PoC) | Mimari Düzeltme | Doğrulama | Durum |
   |---|---|---|---|---|---|---|
   | A01 | Broken Access (IDOR+SSRF) | /profile & /fetch | Başka ID / SSRF | Sahiplik kontrolü + IP Whitelist | 403 test | ✅ |
@@ -645,84 +613,83 @@ HTTP request
   | A10 | Exceptional Conditions | Tüm handler'lar | `.unwrap()` DoS / Hata Sızdırma | Güvenli `ApiError` Error Mapping | DoS koruması | ✅ |
 
 ### 10.2 — Her zafiyet için detay bölümü (aynı şablon)
-- [ ] **Başlık:** OWASP kategorisi + zafiyet adı
-- [ ] **Konum:** dosya + satır + endpoint
-- [ ] **Açıklama:** zafiyet neden var, kök neden
-- [ ] **Sömürü adımları:** birebir komut/payload (PoC referansı)
-- [ ] **Ekran görüntüsü (ÖNCE):** `screenshots/before/aXX-...png` — sömürü başarılı
-- [ ] **Etki:** ne elde edilebilir (auth bypass, veri okuma, çerez çalma...)
-- [ ] **Düzeltme — kod karşılaştırması (yan yana diff):**
+- [x] **Başlık:** OWASP kategorisi + zafiyet adı
+- [x] **Konum:** dosya + satır + endpoint
+- [x] **Açıklama:** zafiyet neden var, kök neden
+- [x] **Sömürü adımları:** birebir komut/payload (PoC referansı)
+- [x] **Ekran görüntüsü (ÖNCE):** `screenshots/before/aXX-...png` — sömürü başarılı
+- [x] **Etki:** ne elde edilebilir (auth bypass, veri okuma, çerez çalma...)
+- [x] **Düzeltme — kod karşılaştırması (yan yana diff):**
   ```diff
   - let q = format!("... WHERE username = '{}'", username);
   - sqlx::query(&q)...
   + sqlx::query_as!(User, "... WHERE username = $1", username)
   ```
-- [ ] **Neden işe yarıyor:** kontrolün mekanizması
-- [ ] **Ekran görüntüsü (SONRA):** `screenshots/after/...` — aynı payload bloklanıyor
-- [ ] **Doğrulama:** ilgili otomatik test adı + sonucu
+- [x] **Neden işe yarıyor:** kontrolün mekanizması
+- [x] **Ekran görüntüsü (SONRA):** `screenshots/after/...` — aynı payload bloklanıyor
+- [x] **Doğrulama:** ilgili otomatik test adı + sonucu
 
 ### 10.3 — Tehdit modeli (`docs/threat-model.md`)
-- [ ] Saldırı yüzeyi tablosu (her endpoint + kabul ettiği girdi + risk)
-- [ ] STRIDE kategorizasyonu (Spoofing/Tampering/Repudiation/Info disclosure/DoS/Elevation)
-- [ ] Güven sınırları diyagramı (kullanıcı → app → db)
+- [x] Saldırı yüzeyi tablosu (her endpoint + kabul ettiği girdi + risk)
+- [x] STRIDE kategorizasyonu (Spoofing/Tampering/Repudiation/Info disclosure/DoS/Elevation)
+- [x] Güven sınırları diyagramı (kullanıcı → app → db)
 
 ### 10.4 — Ekran görüntüsü disiplini
-- [ ] Tutarlı isimlendirme: `aXX-zafiyet-before.png` / `-after.png`
-- [ ] Hassas gerçek veri olmasın (sahte test kullanıcıları)
-- [ ] Her görüntüde ne gösterdiğini kısa alt yazı
+- [x] Tutarlı isimlendirme: `aXX-zafiyet-before.png` / `-after.png`
+- [x] Hassas gerçek veri olmasın (sahte test kullanıcıları)
+- [x] Her görüntüde ne gösterdiğini kısa alt yazı
 
 ### 10.5 — README final
-- [ ] Mimari diyagram (vulnerable/secure mod akışı)
-- [ ] "Nasıl çalıştırılır" (iki mod)
-- [ ] "Nasıl sömürülür" (exploits/ rehberi)
-- [ ] "Nasıl düzeltildi" özeti
-- [ ] Demo GIF / asciinema (SQLi bypass before → secure'da 401 after 🔥)
-- [ ] Etik not (en görünür yerde)
-
+- [x] Mimari diyagram (vulnerable/secure mod akışı)
+- [x] "Nasıl çalıştırılır" (iki mod)
+- [x] "Nasıl sömürülür" (exploits/ rehberi)
+- [x] "Nasıl düzeltildi" özeti
+- [x] Demo GIF / asciinema (SQLi bypass before → secure'da 401 after 🔥)
+- [x] Etik not (en görünür yerde)
 
 ---
 
 ## ✅ Faz 11 — Final Doğrulama (teslim öncesi son kontrol)
 
 ### 11.1 — Fonksiyonel
-- [ ] `cp .env.example .env` + değerleri doldur
-- [ ] `docker compose up --build` → app + Postgres sağlıklı
-- [ ] `curl localhost:8080/health` → 200
-- [ ] Kayıt → giriş → profil → post akışı uçtan uca çalışıyor (secure modda)
+- [x] `cp .env.example .env` + değerleri doldur
+- [x] `docker compose up --build` → app + Postgres sağlıklı
+- [x] `curl localhost:8080/health` → 200
+- [x] Kayıt → giriş → profil → post akışı uçtan uca çalışıyor (secure modda)
 
 ### 11.2 — Açık kanıtı (vulnerable mod)
-- [ ] `APP_MODE=vulnerable` ile kalk
-- [ ] `01_sqli_login_bypass.sh` → giriş başarılı
-- [ ] `03_xss_reflected.html` → alert görünüyor
-- [ ] `05_idor.sh` → başka profiller erişilebilir
-- [ ] `06_bruteforce.sh` → 429 yok, log kaydı sıfır (A09)
-- [ ] `08_integrity.sh` → Base64 oynamasıyla yetki yükseltildi (A08)
-- [ ] API'ye yanlış tip verilerek uygulamanın paniklemesi / SQL detay sızdırması kanıtlandı (A10)
-- [ ] Before ekran görüntüleri alındı
+- [x] `APP_MODE=vulnerable` ile kalk
+- [x] `01_sqli_login_bypass.sh` → giriş başarılı
+- [x] `03_xss_reflected.html` → alert görünüyor
+- [x] `05_idor.sh` → başka profiller erişilebilir
+- [x] `06_bruteforce.sh` → 429 yok, log kaydı sıfır (A09)
+- [x] `08_integrity.sh` → Base64 oynamasıyla yetki yükseltildi (A08)
+- [x] API'ye yanlış tip verilerek uygulamanın paniklemesi / SQL detay sızdırması kanıtlandı (A10)
+- [x] Before ekran görüntüleri alındı
 
 ### 11.3 — Azaltma kanıtı (secure mod)
-- [ ] `APP_MODE=secure` ile kalk
-- [ ] Aynı SQLi → 401
-- [ ] Aynı XSS → escape edilmiş / CSP blokladı
-- [ ] Aynı IDOR → 403
-- [ ] Brute force → 429
-- [ ] Hata yanıtları generic
-- [ ] After ekran görüntüleri alındı
+- [x] `APP_MODE=secure` ile kalk
+- [x] Aynı SQLi → 401
+- [x] Aynı XSS → escape edilmiş / CSP blokladı
+- [x] Aynı IDOR → 403
+- [x] Brute force → 429
+- [x] Hata yanıtları generic
+- [x] After ekran görüntüleri alındı
 
 ### 11.4 — Kalite & güvenlik
-- [ ] `cargo fmt --all --check` temiz
-- [ ] `cargo clippy --all-targets -- -D warnings` uyarısız
-- [ ] `cargo test` → vulnerable + secure tüm e2e yeşil
-- [ ] `cargo audit` → bilinen CVE yok
-- [ ] CI yeşil
+- [x] `cargo fmt --all --check` temiz
+- [x] `cargo clippy --all-targets -- -D warnings` uyarısız
+- [x] `cargo test` → vulnerable + secure tüm e2e yeşil
+- [x] `cargo audit` → bilinen CVE yok
+- [x] CI yeşil
 
 ### 11.5 — Hijyen & teslim
-- [ ] `.env` repoda **değil**, `.env.example` var
-- [ ] Hiçbir gerçek sır/şifre commit edilmemiş (`git log -p | grep -i password` kontrol)
-- [ ] `owasp-report.md` tüm bölümler dolu, before/after görüntüleri bağlı
-- [ ] `threat-model.md` tamam
-- [ ] README + diyagram + demo hazır
-- [ ] `git tag v1.0.0`
+- [x] `.env` repoda **değil**, `.env.example` var
+- [x] Hiçbir gerçek sır/şifre commit edilmemiş (`git log -p | grep -i password` kontrol)
+- [x] `owasp-report.md` tüm bölümler dolu, before/after görüntüleri bağlı
+- [x] `threat-model.md` tamam
+- [x] README + diyagram + demo hazır
+- [x] `git tag v1.0.0`
 
 ---
 
@@ -738,7 +705,7 @@ HTTP request
 
 ## 💡 Öğrenme Çıktıları (CV/portfolyoda vurgula)
 
-- [ ] En güncel **OWASP 2026/2025** Top 10 standartlarını gerçek bir projede tatbik etme
+- [ ] En güncel **OWASP 2025/2026** Top 10 standartlarını gerçek bir projede tatbik etme
 - [ ] Zero-Trust mimari ve "Secure by Design" (Tasarım Aşamasında Güvenlik) prensipleri
 - [ ] Tedarik zinciri güvenliği (`cargo audit`) ve Build süreci zehirlenmelerine karşı önlemler (A03)
 - [ ] Rust'ın güçlü tip sistemi ve error handling özellikleri ile "Exceptional Conditions" (A10) zaaflarını (panic, DoS) yok etme

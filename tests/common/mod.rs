@@ -1,11 +1,11 @@
 // tests/common/mod.rs
 
-use std::net::TcpListener;
-use sqlx::{PgPool};
+use rust_owasp_top10::auth;
 use rust_owasp_top10::config::AppMode;
 use rust_owasp_top10::routes::{create_router, AppState};
-use rust_owasp_top10::auth;
+use sqlx::PgPool;
 
+#[allow(dead_code)]
 pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,

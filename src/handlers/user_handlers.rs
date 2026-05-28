@@ -20,9 +20,9 @@ pub async fn resolve_current_user(state: &AppState, headers: &HeaderMap) -> Opti
         AppMode::Vulnerable => {
             if let Some(b64) = get_cookie(headers, "user_session") {
                 use base64::Engine;
-                if let Ok(decoded) = base64::engine::general_purpose::STANDARD.decode(
-                    b64.as_bytes()
-                ) {
+                if let Ok(decoded) =
+                    base64::engine::general_purpose::STANDARD.decode(b64.as_bytes())
+                {
                     if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&decoded) {
                         if let Some(id) = val.get("id").and_then(|i| i.as_i64()) {
                             // Zafiyetli modda veritabanından sorgulayıp dönüyoruz
@@ -35,7 +35,9 @@ pub async fn resolve_current_user(state: &AppState, headers: &HeaderMap) -> Opti
         }
         AppMode::Secure => {
             if let Some(token) = get_cookie(headers, "session_token") {
-                if let Ok(Some((_session, user))) = crate::session::get_session(&state.pool, &token).await {
+                if let Ok(Some((_session, user))) =
+                    crate::session::get_session(&state.pool, &token).await
+                {
                     return Some(user);
                 }
             }
@@ -68,13 +70,11 @@ pub async fn show_profile(
     // ⚠️ VULNERABLE — IDOR: Giriş kontrolü olmaksızın, profile_id parametresine göre profil gösterilir!
     // Saldırgan herhangi bir id vererek herkesin profilini gezebilir.
     match state.auth.find_user(profile_id).await {
-        Ok(profile_user) => {
-            Ok(ProfileTemplate {
-                user: profile_user,
-                current_user,
-                is_vulnerable: state.mode == AppMode::Vulnerable,
-            })
-        }
+        Ok(profile_user) => Ok(ProfileTemplate {
+            user: profile_user,
+            current_user,
+            is_vulnerable: state.mode == AppMode::Vulnerable,
+        }),
         Err(_) => Err(ApiError::NotFound),
     }
 }
@@ -83,10 +83,14 @@ pub async fn show_profile(
 // Zafiyetli modda tüm hassas sistem verilerini (DATABASE_URL, SECRET_KEY vb.) dışarı sızdıran debug endpoint'i.
 pub async fn show_debug(State(state): State<AppState>) -> impl IntoResponse {
     use axum::http::StatusCode;
-    
+
     if state.mode == AppMode::Secure {
         // SECURE MOD: Debug endpoint'i tamamen kapatılır veya yetkilendirilir.
-        return (StatusCode::FORBIDDEN, "🔒 GÜVENLİ: Yetkisiz debug erişimi engellendi.").into_response();
+        return (
+            StatusCode::FORBIDDEN,
+            "🔒 GÜVENLİ: Yetkisiz debug erişimi engellendi.",
+        )
+            .into_response();
     }
 
     // ⚠️ VULNERABLE: Tüm gizli anahtarlar ve veritabanı şifreleri JSON olarak dışarı sızıyor!

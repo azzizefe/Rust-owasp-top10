@@ -1,12 +1,12 @@
 // src/handlers/post_handlers.rs
 
+use ammonia::clean;
 use axum::{
     extract::{Query, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Redirect},
     Form,
 };
-use ammonia::clean;
 use tracing::warn;
 
 use crate::config::AppMode;
@@ -60,11 +60,19 @@ pub async fn search_posts(
         Err(e) => {
             return if state.mode == AppMode::Vulnerable {
                 // Hata detayı sızdırılıyor
-                (StatusCode::INTERNAL_SERVER_ERROR, format!("SQL Arama Hatası: {:?}", e)).into_response()
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("SQL Arama Hatası: {:?}", e),
+                )
+                    .into_response()
             } else {
                 // Güvenli hata mesajı
-                (StatusCode::INTERNAL_SERVER_ERROR, "Arama sırasında bir hata oluştu.").into_response()
-            }
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Arama sırasında bir hata oluştu.",
+                )
+                    .into_response()
+            };
         }
     };
 
@@ -96,16 +104,17 @@ pub async fn fetch_url(
             // ⚠️ VULNERABLE: SSRF - URL doğrulaması yapılmaz, yerel IP'ler engellenmez.
             // ⚠️ VULNERABLE: A10 DoS - Geçersiz URL verilirse .unwrap() nedeniyle sunucu çöker (Crash/Panic DoS).
             let client = reqwest::Client::new();
-            
+
             // unwrap() tetikleme simülasyonu
-            let resp = client.get(&url_str)
+            let resp = client
+                .get(&url_str)
                 .send()
                 .await
                 .unwrap() // Geçersiz şema/host verilirse panikler!
                 .text()
                 .await
                 .unwrap();
-                
+
             (StatusCode::OK, resp).into_response()
         }
         AppMode::Secure => {
@@ -119,36 +128,50 @@ pub async fn fetch_url(
             // Localhost / Özel ağ engeli (Blacklisting)
             if let Some(host) = parsed_url.host_str() {
                 let h_lower = host.to_lowercase();
-                if h_lower == "localhost" 
-                    || h_lower == "127.0.0.1" 
-                    || h_lower.starts_with("192.168.") 
-                    || h_lower.starts_with("10.") 
-                    || h_lower.starts_with("172.16.") 
+                if h_lower == "localhost"
+                    || h_lower == "127.0.0.1"
+                    || h_lower.starts_with("192.168.")
+                    || h_lower.starts_with("10.")
+                    || h_lower.starts_with("172.16.")
                 {
-                    warn!("🔒 SSRF ENGELENDİ: Kullanıcı iç ağdaki adrese ({}) erişmeye çalıştı!", host);
-                    return (StatusCode::FORBIDDEN, "İç ağ adreslerine erişim yasaktır.").into_response();
+                    warn!(
+                        "🔒 SSRF ENGELENDİ: Kullanıcı iç ağdaki adrese ({}) erişmeye çalıştı!",
+                        host
+                    );
+                    return (StatusCode::FORBIDDEN, "İç ağ adreslerine erişim yasaktır.")
+                        .into_response();
                 }
             }
 
             // Güvenli istek atımı
             let client = match reqwest::Client::builder()
                 .timeout(std::time::Duration::from_secs(3))
-                .build() {
-                    Ok(c) => c,
-                    Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "İstemci oluşturulamadı.").into_response(),
-                };
+                .build()
+            {
+                Ok(c) => c,
+                Err(_) => {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, "İstemci oluşturulamadı.")
+                        .into_response()
+                }
+            };
 
             match client.get(url_str).send().await {
                 Ok(resp) => {
                     let status = resp.status();
                     match resp.text().await {
                         Ok(body) => (status, body).into_response(),
-                        Err(_) => (StatusCode::BAD_GATEWAY, "Yanıttaki veri okunamadı.").into_response(),
+                        Err(_) => {
+                            (StatusCode::BAD_GATEWAY, "Yanıttaki veri okunamadı.").into_response()
+                        }
                     }
                 }
                 Err(e) => {
                     warn!("İstek başarısız oldu: {:?}", e);
-                    (StatusCode::BAD_GATEWAY, "İstek gönderilen adres yanıt vermedi.").into_response()
+                    (
+                        StatusCode::BAD_GATEWAY,
+                        "İstek gönderilen adres yanıt vermedi.",
+                    )
+                        .into_response()
                 }
             }
         }
