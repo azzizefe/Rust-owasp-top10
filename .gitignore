@@ -1,1 +1,16 @@
-﻿
+/target
+**/target
+.env
+.env.local
+.env.*.local
+*.log
+logs/
+docs/screenshots/*.tmp
+*.swp
+static/uploads/
+.DS_Store
+Thumbs.db
+node_modules/
+*.sqlite
+*.db
+create_structure.ps1
