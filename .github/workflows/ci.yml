@@ -1,0 +1,61 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: CHANGEME
+          POSTGRES_DB: owasp_lab
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install SQLx CLI
+        run: cargo install sqlx-cli --no-default-features --features postgres
+
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: postgres://app:CHANGEME@localhost:5432/owasp_lab
+        run: sqlx database setup
+
+      - name: Format Check
+        run: cargo fmt --all --check
+
+      - name: Linter (Clippy)
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run Integration & Unit Tests
+        env:
+          DATABASE_URL: postgres://app:CHANGEME@localhost:5432/owasp_lab
+        run: cargo test
+
+      - name: Production Release Build
+        run: cargo build --release

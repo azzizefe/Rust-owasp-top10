@@ -64,7 +64,8 @@ async fn test_vulnerable_reflected_xss() {
 
     // ⚠️ VULNERABLE REFLECTED XSS:
     // Arama kutusuna gönderilen JavaScript kodu escape edilmeden gövdeye yansıtılır.
-    let payload = "<script>alert('reflected')</script>";
+    // SQLi zafiyeti bulunan sorgunun kırılmaması için tek tırnak içermeyen bir payload seçiyoruz.
+    let payload = "<script>alert(1)</script>";
     
     let resp = client
         .get(&format!("{}/search?q={}", app.address, payload))
@@ -86,6 +87,21 @@ async fn test_vulnerable_reflected_xss() {
 async fn test_vulnerable_idor() {
     let app = common::spawn_app(AppMode::Vulnerable).await;
     let client = Client::new();
+
+    // IDOR zafiyetinin tetiklenebilmesi için veritabanında en az bir profil olmalıdır.
+    // Önce bir kullanıcı kaydediyoruz
+    let register_form = RegisterForm {
+        username: "testuser_idor".to_string(),
+        password: "password123".to_string(),
+        email: "idor@test.com".to_string(),
+    };
+    let reg_resp = client
+        .post(&format!("{}/register", app.address))
+        .form(&register_form)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(reg_resp.status(), StatusCode::OK);
 
     // ⚠️ VULNERABLE IDOR:
     // Herhangi bir oturum veya yetkilendirme olmaksızın doğrudan profile/1 veya profile/2 adresine istek atılabilir.

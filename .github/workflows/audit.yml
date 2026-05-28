@@ -1,0 +1,27 @@
+name: Dependency Security Audit
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Her Pazartesi saat 00:00'da otomatik çalıştır (Security Sweep)
+    - cron: '0 0 * * 1'
+
+jobs:
+  security_audit:
+    name: Dependency Audit Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-audit
+          use-tool-cache: true
+
+      - name: Run Vulnerability Scan
+        run: cargo audit

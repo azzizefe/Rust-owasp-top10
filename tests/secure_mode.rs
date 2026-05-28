@@ -39,7 +39,7 @@ async fn test_secure_reflected_xss_escaped() {
 
     // 🛡️ SECURE REFLECTED XSS PROTECTION:
     // Arama kutusuna gönderilen JavaScript kodu Askama tarafından otomatik escape edilir.
-    let payload = "<script>alert('reflected')</script>";
+    let payload = "<script>alert(1)</script>";
     
     let resp = client
         .get(&format!("{}/search?q={}", app.address, payload))
