@@ -1,1 +1,55 @@
-﻿
+{% extends "base.html" %}
+
+{% block nav_auth %}
+    {% if let Some(curr) = current_user %}
+        <li><span style="color: var(--text-secondary);">Hoş geldin, <strong>{{ curr.username }}</strong></span></li>
+        <li><a href="/logout" class="logout-btn">Çıkış Yap</a></li>
+    {% else %}
+        <li><a href="/login">Giriş Yap</a></li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 640px; margin: 0 auto; width: 100%;">
+    {% if is_vulnerable %}
+        <div class="mode-indicator mode-vulnerable" style="margin-bottom: 1.5rem;">
+            ⚠️ VULNERABLE MODE (IDOR & BROKEN ACCESS CONTROL ACTIVE)
+        </div>
+    {% else %}
+        <div class="mode-indicator mode-secure" style="margin-bottom: 1.5rem;">
+            🔒 SECURE MODE (BROKEN ACCESS CONTROL PROTECTED)
+        </div>
+    {% endif %}
+
+    <div class="glass-card">
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="width: 80px; height: 80px; border-radius: 9999px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 700; color: white;">
+                {{ user.username.chars().next().unwrap_or('U') | uppercase }}
+            </div>
+            <div>
+                <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.25rem;">{{ user.username }}</h2>
+                <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #a5b4fc; text-transform: uppercase;">
+                    {{ user.role }}
+                </span>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--glass-border); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+            <div>
+                <span style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">E-posta Adresi</span>
+                <span style="font-size: 1.05rem; font-weight: 500;">{{ user.email }}</span>
+            </div>
+            <div>
+                <span style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Hesap Oluşturma Tarihi</span>
+                <span style="font-size: 1.05rem; font-weight: 500;">{{ user.created_at }}</span>
+            </div>
+        </div>
+
+        {% if is_vulnerable %}
+            <div style="margin-top: 2rem; padding: 1rem; border-radius: 12px; background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.3); font-size: 0.9rem; color: #fca5a5;">
+                <strong>⚠️ Güvenlik Açığı Tespiti:</strong> Zafiyetli moddasınız. URL satırındaki ID parametresini değiştirerek (örneğin /profile/1, /profile/2) herhangi bir kimlik doğrulama veya yetkilendirme olmaksızın diğer kullanıcıların verilerine erişebilirsiniz!
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

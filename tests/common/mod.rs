@@ -12,6 +12,10 @@ pub struct TestApp {
 }
 
 pub async fn spawn_app(mode: AppMode) -> TestApp {
+    let _ = tracing_subscriber::fmt()
+        .with_env_filter("info,sqlx=warn,tower_http=info")
+        .try_init();
+
     // 1. .env dosyasından DATABASE_URL oku, yoksa varsayılanı kullan
     dotenvy::dotenv().ok();
     let db_url = std::env::var("DATABASE_URL")
@@ -45,7 +49,12 @@ pub async fn spawn_app(mode: AppMode) -> TestApp {
     // 5. Router'ı oluştur ve arka planda tokio ile ayağa kaldır
     let router = create_router(state);
     tokio::spawn(async move {
-        axum::serve(tokio_listener, router).await.unwrap();
+        axum::serve(
+            tokio_listener,
+            router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+        )
+        .await
+        .unwrap();
     });
 
     TestApp { address, db_pool }
