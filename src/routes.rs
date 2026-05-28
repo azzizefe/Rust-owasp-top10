@@ -20,7 +20,10 @@ pub struct AppState {
 }
 
 pub fn create_router(state: AppState) -> Router {
-    Router::new()
+    let mode = state.mode;
+    
+    // Temel router oluşturuluyor
+    let mut router = Router::new()
         // Sağlık kontrolü
         .route("/health", get(health_check))
         
@@ -38,7 +41,51 @@ pub fn create_router(state: AppState) -> Router {
         .route("/posts", post(post_handlers::create_post))
         .route("/fetch", get(post_handlers::fetch_url))
         
-        .with_state(state)
+        .with_state(state);
+
+    // SECURE MOD: Güvenlik başlıkları, rate limiting ve body limit korumaları (OWASP A05 & A06:2026)
+    if mode == AppMode::Secure {
+        use tower_http::{
+            limit::RequestBodyLimitLayer,
+            set_header::SetResponseHeaderLayer,
+        };
+        use axum::http::header;
+        use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
+        use std::sync::Arc;
+
+        // 1. IP Başına Hız Sınırı (Rate Limiting - Brute-Force Koruması - OWASP A07:2026)
+        // Her 2 saniyede 1 istek limiti, maksimum 5 istek birikimi (burst)
+        let governor_config = Box::leak(Box::new(
+            GovernorConfigBuilder::default()
+                .per_second(2)
+                .burst_size(5)
+                .finish()
+                .unwrap(),
+        ));
+
+        // 2. Güvenlik Header Katmanları (Security Headers - OWASP A06:2026)
+        router = router
+            .layer(GovernorLayer { config: governor_config })
+            .layer(RequestBodyLimitLayer::new(64 * 1024)) // 64KB büyük istek boyutu DoS engeli (OWASP A10:2026)
+            .layer(SetResponseHeaderLayer::overriding(
+                header::CONTENT_SECURITY_POLICY,
+                header::HeaderValue::from_static("default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'")
+            ))
+            .layer(SetResponseHeaderLayer::overriding(
+                header::X_FRAME_OPTIONS,
+                header::HeaderValue::from_static("DENY")
+            ))
+            .layer(SetResponseHeaderLayer::overriding(
+                header::X_CONTENT_TYPE_OPTIONS,
+                header::HeaderValue::from_static("nosniff")
+            ))
+            .layer(SetResponseHeaderLayer::overriding(
+                header::REFERRER_POLICY,
+                header::HeaderValue::from_static("no-referrer")
+            ));
+    }
+
+    router
 }
 
 async fn health_check() -> &'static str {

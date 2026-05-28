@@ -1,12 +1,18 @@
 // src/auth/secure.rs
 
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2, PasswordHash,
+};
 use async_trait::async_trait;
 use sqlx::PgPool;
+use tracing::warn;
 
 use crate::auth::AuthBackend;
 use crate::error::ApiError;
 use crate::models::{LoginForm, Post, RegisterForm, Session, User};
 
+// ✅ SECURE — OWASP A03 & A07:2026 Uyumlu Zırhlandırılmış Auth Yapısı
 pub struct SecureAuth {
     pool: PgPool,
 }
@@ -19,28 +25,123 @@ impl SecureAuth {
 
 #[async_trait]
 impl AuthBackend for SecureAuth {
+    // ✅ SECURE: Güçlü Argon2id Parola Hashleme (OWASP A07:2026) ve Parameterized SQLi Koruması (OWASP A04:2026)
     async fn register(&self, form: RegisterForm) -> Result<i64, ApiError> {
-        // Güvenli kayıt implementasyonu (ilerleyen fazda doldurulacak)
-        Ok(1)
+        // Argon2id ile güçlü, salt'lı hash üretimi
+        let salt = SaltString::generate(&mut OsRng);
+        let password_hash = Argon2::default()
+            .hash_password(form.password.as_bytes(), &salt)
+            .map_err(|e| ApiError::Internal(e.to_string()))?
+            .to_string();
+
+        // Parametreli sorgu ($1, $2, $3) girdiyi SQL yapısından ayırır (SQLi Engeli)
+        let row = sqlx::query!(
+            "INSERT INTO users (username, password_hash, email, role) VALUES ($1, $2, $3, 'user') RETURNING id",
+            form.username,
+            password_hash,
+            form.email
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(row.id)
     }
 
+    // ✅ SECURE: Parametreli SQL sorgusu + Zamanlama Analizi (Timing Attack) Koruması (OWASP A07:2026)
     async fn login(&self, form: LoginForm) -> Result<Session, ApiError> {
-        // Güvenli giriş implementasyonu (ilerleyen fazda doldurulacak)
-        Err(ApiError::Unauthorized)
+        // Parametreli sorgu ile kullanıcı araması (SQLi engeli)
+        let user_opt = sqlx::query_as::<_, User>(
+            "SELECT id, username, password_hash, email, role, created_at FROM users WHERE username = $1"
+        )
+        .bind(&form.username)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        // Zamanlama Saldırısı (Timing Attack) Koruması:
+        // Eğer kullanıcı yoksa bile sahte bir Argon2id doğrulaması çalıştırarak
+        // saldırganın geçerli/geçersiz kullanıcı analizini yapmasını engelliyoruz!
+        if user_opt.is_none() {
+            let dummy_hash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$dGVzdHBhc3N3b3JkZHVtbXloYXNo";
+            let parsed_hash = PasswordHash::new(dummy_hash).map_err(|_| ApiError::Unauthorized)?;
+            let _ = Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash);
+            warn!("🔒 GÜVENLİK AUDIT: Oturum açma başarısız (Kullanıcı bulunamadı) - IP/Rate-limit izlemesi etkin.");
+            return Err(ApiError::Unauthorized);
+        }
+
+        let user = user_opt.expect("Kullanıcı varlığı doğrulandı");
+
+        // Parola hash doğrulaması
+        let parsed_hash = PasswordHash::new(&user.password_hash)
+            .map_err(|e| {
+                tracing::error!("Parola hash parse hatası: {:?}", e);
+                ApiError::Unauthorized
+            })?;
+
+        if Argon2::default()
+            .verify_password(form.password.as_bytes(), &parsed_hash)
+            .is_err()
+        {
+            warn!("🔒 GÜVENLİK AUDIT: Yanlış şifre denemesi. Kullanıcı: {}", user.username);
+            return Err(ApiError::Unauthorized);
+        }
+
+        // Güvenli, kriptografik rastgele oturum token'ı oluştur (OWASP A02:2026)
+        let session = crate::session::create_session(&self.pool, user.id, 2).await?;
+        Ok(session)
     }
 
+    // ✅ SECURE: Parametreli profil araması (SQLi engeli)
     async fn find_user(&self, id: i64) -> Result<User, ApiError> {
-        // Güvenli profil arama implementasyonu (ilerleyen fazda doldurulacak)
-        Err(ApiError::NotFound)
+        let user = sqlx::query_as::<_, User>(
+            "SELECT id, username, password_hash, email, role, created_at FROM users WHERE id = $1"
+        )
+        .bind(id)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(user)
     }
 
+    // ✅ SECURE: Parametreli post oluşturma (SQLi engeli)
     async fn create_post(&self, author_id: i64, content: &str) -> Result<i64, ApiError> {
-        // Güvenli post oluşturma implementasyonu (ilerleyen fazda doldurulacak)
-        Ok(1)
+        let row = sqlx::query!(
+            "INSERT INTO posts (author_id, content) VALUES ($1, $2) RETURNING id",
+            author_id,
+            content
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(row.id)
     }
 
+    // ✅ SECURE: SQL Injection korumalı parametreli arama ve birleştirme sorgusu
     async fn search_posts(&self, query: &str) -> Result<Vec<(Post, String)>, ApiError> {
-        // Güvenli post arama implementasyonu (ilerleyen fazda doldurulacak)
-        Ok(vec![])
+        let search_pattern = format!("%{}%", query);
+        
+        let rows = sqlx::query_as::<_, (i64, i64, String, chrono::DateTime<chrono::Utc>, String)>(
+            "SELECT p.id, p.author_id, p.content, p.created_at, u.username \
+             FROM posts p JOIN users u ON p.author_id = u.id \
+             WHERE p.content LIKE $1"
+        )
+        .bind(&search_pattern)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let result = rows
+            .into_iter()
+            .map(|row| {
+                let post = Post {
+                    id: row.0,
+                    author_id: row.1,
+                    content: row.2,
+                    created_at: row.3,
+                };
+                let username = row.4;
+                (post, username)
+            })
+            .collect();
+
+        Ok(result)
     }
 }

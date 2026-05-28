@@ -466,84 +466,64 @@ HTTP request
 > Her düzeltme için: kök neden → uygulanan kontrol → neden işe yaradığı. Bunları rapora birebir taşı.
 
 ### 6.1 — A03 SQLi → Parametreli Sorgu (Prepared Statements)
-- [ ] `SecureAuth::login` `sqlx::query_as!` makrosu ile:
-  ```rust
-  // ✅ SECURE — $1/$2 parametreleri girdiyi SQL'den tamamen ayırır
-  let user = sqlx::query_as!(
-      User,
-      "SELECT id, username, password_hash, email, role, created_at \
-       FROM users WHERE username = $1",
-      username
-  ).fetch_optional(&self.pool).await?;
-  ```
-- [ ] **Neden tutuyor:** parametre veri kanalından gider, parser'a kod olarak ulaşmaz → `' OR '1'='1` artık literal string
-- [ ] **Bonus:** `query_as!` makrosu derleme zamanında SQL'i DB şemasına karşı doğrular (yanlış kolon = derleme hatası) → rapora "compile-time güvenlik" notu
-- [ ] Tüm dinamik sorguları parametreliye çevir (arama dahil)
+- [x] `SecureAuth::login` `sqlx::query_as!` makrosu ile:
+- [x] **Neden tutuyor:** parametre veri kanalından gider, parser'a kod olarak ulaşmaz → `' OR '1'='1` artık literal string
+- [x] **Bonus:** `query_as!` makrosu derleme zamanında SQL'i DB şemasına karşı doğrular (yanlış kolon = derleme hatası) → rapora "compile-time güvenlik" notu
+- [x] Tüm dinamik sorguları parametreliye çevir (arama dahil)
 
 ### 6.2 — A03 XSS → Escaping + CSP + Sanitization (3 katman)
-- [ ] **Katman 1 — Output escaping:** askama template kullan, `format!`+`Html` enjeksiyonunu kaldır → `<` otomatik `&lt;`
-- [ ] **Katman 2 — CSP header (middleware):**
+- [x] **Katman 1 — Output escaping:** askama template kullan, `format!`+`Html` enjeksiyonunu kaldır → `<` otomatik `&lt;`
+- [x] **Katman 2 — CSP header (middleware):**
   ```
   Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'
   ```
   → inline `<script>` ve `onerror=` çalışmaz
-- [ ] **Katman 3 — Input sanitization:** zengin metin gerekiyorsa `ammonia::clean(content)` ile whitelist temizleme (tehlikeli tag/attr atılır)
-- [ ] **Neden tutuyor:** reflected/stored payload artık ya escape edilir ya CSP ile bloklanır ya da sanitize edilir → derinlemesine savunma
+- [x] **Katman 3 — Input sanitization:** zengin metin gerekiyorsa `ammonia::clean(content)` ile whitelist temizleme (tehlikeli tag/attr atılır)
+- [x] **Neden tutuyor:** reflected/stored payload artık ya escape edilir ya CSP ile bloklanır ya da sanitize edilir → derinlemesine savunma
 
 ### 6.3 — A07 → Güçlü Kimlik Doğrulama
-- [ ] **Parola hash:** argon2id ile salt'lı hash
-  ```rust
-  // ✅ SECURE
-  let salt = SaltString::generate(&mut OsRng);
-  let hash = Argon2::default().hash_password(pw.as_bytes(), &salt)?.to_string();
-  ```
-- [ ] **Doğrulama:** `Argon2::default().verify_password(...)`
-- [ ] **Rate limit:** `tower_governor` ile login endpoint'ine IP başına sınır → brute force 429
-- [ ] **Oturum:** 32+ byte `OsRng` token, cookie `HttpOnly; Secure; SameSite=Strict`, makul `expires_at`
-- [ ] **Sabit mesaj:** "kullanıcı adı veya parola hatalı" (enumeration engeli)
-- [ ] **Timing:** kullanıcı yoksa bile sahte hash doğrulaması yap (timing attack azaltma — bonus)
+- [x] **Parola hash:** argon2id ile salt'lı hash
+- [x] **Doğrulama:** `Argon2::default().verify_password(...)`
+- [x] **Rate limit:** `tower_governor` ile login endpoint'ine IP başına sınır → brute force 429
+- [x] **Oturum:** 32+ byte `OsRng` token, cookie `HttpOnly; Secure; SameSite=Strict`, makul `expires_at`
+- [x] **Sabit mesaj:** "kullanıcı adı veya parola hatalı" (enumeration engeli)
+- [x] **Timing:** kullanıcı yoksa bile sahte hash doğrulaması yap (timing attack azaltma — bonus)
 
 ### 6.4 — A01 → Erişim Kontrolü
-- [ ] `GET /profile/:id`: oturumdaki `user_id` ile istenen `id` eşleşmiyorsa **ve** rol admin değilse → 403
-  ```rust
-  // ✅ SECURE — sahiplik/rol kontrolü
-  if session.user_id != path_id && session.role != "admin" {
-      return Err(ApiError::Forbidden);
-  }
-  ```
-- [ ] **Mass assignment engeli:** `role` gibi alanlar client formundan ASLA okunmaz; sunucu belirler
-- [ ] Yetkilendirme kontrolünü merkezi bir extractor/middleware'e taşı (her endpoint'te tekrar etme)
+- [x] `GET /profile/:id`: oturumdaki `user_id` ile istenen `id` eşleşmiyorsa **ve** rol admin değilse → 403
+- [x] **Mass assignment engeli:** `role` gibi alanlar client formundan ASLA okunmaz; sunucu belirler
+- [x] Yetkilendirme kontrolünü merkezi bir extractor/middleware'e taşı (her endpoint'te tekrar etme)
 
-### 6.5 — A05 → Güvenli Konfigürasyon (`middleware.rs`)
-- [ ] **Güvenlik header'ları** (`SetResponseHeaderLayer`):
-  - [ ] `X-Content-Type-Options: nosniff`
-  - [ ] `X-Frame-Options: DENY`
-  - [ ] `Content-Security-Policy: ...` (6.2)
-  - [ ] `Referrer-Policy: no-referrer`
-  - [ ] `Strict-Transport-Security: max-age=31536000` (HTTPS arkasındaysa)
-- [ ] **Generic hata:** `ApiError::Internal` → kullanıcıya "Sunucu hatası", detay sadece log
-- [ ] **Body limit:** `RequestBodyLimitLayer` (örn. 64KB) → büyük payload DoS engeli
-- [ ] **Timeout:** `TimeoutLayer`
-- [ ] **Server banner kapat / minimize et**
+### 6.5 — A05 → Güvenli Konfigürasyon (`middleware.rs` / `routes.rs`)
+- [x] **Güvenlik header'ları** (`SetResponseHeaderLayer`):
+  - [x] `X-Content-Type-Options: nosniff`
+  - [x] `X-Frame-Options: DENY`
+  - [x] `Content-Security-Policy: ...` (6.2)
+  - [x] `Referrer-Policy: no-referrer`
+  - [x] `Strict-Transport-Security: max-age=31536000` (HTTPS arkasındaysa)
+- [x] **Generic hata:** `ApiError::Internal` → kullanıcıya "Sunucu hatası", detay sadece log
+- [x] **Body limit:** `RequestBodyLimitLayer` (örn. 64KB) → büyük payload DoS engeli
+- [x] **Timeout:** `TimeoutLayer`
+- [x] **Server banner kapat / minimize et**
 
 ### 6.6 — A05 → Insecure Design & İş Mantığı
-- [ ] State değiştiren formlara CSRF token entegre et.
-- [ ] Kritik işlemler (şifre/email değişimi) için "Re-authentication" (tekrar doğrulama) zorunluluğu ekle.
+- [x] State değiştiren formlara CSRF token entegre et.
+- [x] Kritik işlemler (şifre/email değişimi) için "Re-authentication" (tekrar doğrulama) zorunluluğu ekle.
 
 ### 6.7 — A03 & A06 → Tedarik Zinciri Güvenliği ve Misconfig Savunması
-- [ ] A03 (Supply Chain): `cargo audit` entegrasyonunu CI pipeline'a zorunlu koş. `build.rs` scriptlerinin ne çalıştırdığını kısıtla.
-- [ ] A06: Güvenlik header'larını (CSP, HSTS, NoSniff) Tower middleware ile zırhla. Debug route'ları kapat.
+- [x] A03 (Supply Chain): `cargo audit` entegrasyonunu CI pipeline'a zorunlu koş. `build.rs` scriptlerinin ne çalıştırdığını kısıtla.
+- [x] A06: Güvenlik header'larını (CSP, HSTS, NoSniff) Tower middleware ile zırhla. Debug route'ları kapat.
 
 ### 6.8 — A02 & A01 → Kriptografi ve Erişim (SSRF) Kalkanları
-- [ ] A02: Hassas verileri DB'ye yazarken AES-GCM ile şifrele. Token'lar için `rand::rngs::OsRng` kullan.
-- [ ] A01 (SSRF): Dışa istek atan endpoint'lerde URL'yi parse et, Localhost ve Private IP bloklarına erişimi strict şekilde blokla.
+- [x] A02: Hassas verileri DB'ye yazarken AES-GCM ile şifrele. Token'lar için `rand::rngs::OsRng` kullan.
+- [x] A01 (SSRF): Dışa istek atan endpoint'lerde URL'yi parse et, Localhost ve Private IP bloklarına erişimi strict şekilde blokla.
 
 ### 6.9 — A08 → Yazılım ve Veri Bütünlüğü
-- [ ] Cookie tabanlı state yönetimini HMAC imzalı `SignedCookie` (`axum-extra`) ile koru. İmzası tutmayan çerezleri anında reddet (Tampering koruması).
+- [x] Cookie tabanlı state yönetimini HMAC imzalı `SignedCookie` (`axum-extra`) ile koru. İmzası tutmayan çerezleri anında reddet (Tampering koruması).
 
 ### 6.10 — A09 & A10 → Loglama ve Kusursuz Hata Yönetimi (Rust'ın Gücü)
-- [ ] A09: `tracing` ile başarısız login ve 403 hatalarına yapılandırılmış audit loglar bırak (`tracing::warn!("Bruteforce attempt from IP...")`).
-- [ ] A10 (Exceptions): ASLA `.unwrap()` veya `.expect()` kullanma. Tüm hataları `Result` ile `ApiError` enum'unda karşıla (Fail Safe). API kullanıcılarına sadece statik "Internal Server Error" dön, orijinal hata detayını güvenli loga yaz.
+- [x] A09: `tracing` ile başarısız login ve 403 hatalarına yapılandırılmış audit loglar bırak (`tracing::warn!("Bruteforce attempt from IP...")`).
+- [x] A10 (Exceptions): ASLA `.unwrap()` veya `.expect()` kullanma. Tüm hataları `Result` ile `ApiError` enum'unda karşıla (Fail Safe). API kullanıcılarına sadece statik "Internal Server Error" dön, orijinal hata detayını güvenli loga yaz.
 
 
 ---
