@@ -19,8 +19,8 @@ pub async fn resolve_current_user(state: &AppState, headers: &HeaderMap) -> Opti
     match state.mode {
         AppMode::Vulnerable => {
             if let Some(b64) = get_cookie(headers, "user_session") {
-                if let Ok(decoded) = base64::Engine::decode(
-                    &base64::engine::general_purpose::STANDARD,
+                use base64::Engine;
+                if let Ok(decoded) = base64::engine::general_purpose::STANDARD.decode(
                     b64.as_bytes()
                 ) {
                     if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&decoded) {
@@ -92,7 +92,7 @@ pub async fn show_debug(State(state): State<AppState>) -> impl IntoResponse {
     // ⚠️ VULNERABLE: Tüm gizli anahtarlar ve veritabanı şifreleri JSON olarak dışarı sızıyor!
     let debug_info = serde_json::json!({
         "status": "vulnerable_debug_active",
-        "database_url": state.pool.connect_options().to_string(), // Hassas bağlantı şifresi sızıyor!
+        "database_url": std::env::var("DATABASE_URL").unwrap_or_default(), // Hassas bağlantı şifresi sızıyor!
         "session_secret": state.session_secret,
         "app_mode": format!("{:?}", state.mode),
         "rust_version": "1.95.0",

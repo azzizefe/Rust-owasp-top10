@@ -31,6 +31,7 @@ pub fn create_router(state: AppState) -> Router {
         
         // Profil rotası
         .route("/profile/:id", get(user_handlers::show_profile))
+        .route("/api/debug", get(user_handlers::show_debug))
         
         // Post rotaları
         .route("/search", get(post_handlers::search_posts))

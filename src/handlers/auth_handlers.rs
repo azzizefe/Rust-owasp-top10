@@ -64,8 +64,8 @@ pub async fn login(
                     });
                     
                     // Base64 encode
-                    let b64 = base64::Engine::encode(
-                        &base64::engine::general_purpose::STANDARD,
+                    use base64::Engine;
+                    let b64 = base64::engine::general_purpose::STANDARD.encode(
                         cookie_json.to_string().as_bytes()
                     );
                     
