@@ -186,21 +186,21 @@ HTTP request
 ## 🗂️ Faz 1 — Proje, Repo Hijyeni & Sırların Yönetimi
 
 ### 1.1 — Proje iskeleti
-- [ ] `cargo init` çalıştır.
-- [ ] Kök `Cargo.toml` dosyasına bağımlılıkları ekle (Faz 2.1).
+- [x] `cargo init` çalıştır. (Flat workspace iskeleti kuruldu)
+- [x] Kök `Cargo.toml` dosyasına bağımlılıkları ekle (Faz 2.1).
 
 ### 1.2 — `.gitignore` (sır sızıntısı = OWASP A05, repo hijyeni konunun kendisi)
-- [ ] `/target`, `**/target`
-- [ ] `.env`, `.env.local`, `.env.*.local` (**gerçek şifreler ASLA repoda olmaz**)
-- [ ] `*.log`, `logs/`
-- [ ] `docs/screenshots/*.tmp`, `*.swp`
-- [ ] `static/uploads/` (kullanıcı yüklemesi varsa)
-- [ ] `.DS_Store`, `Thumbs.db`
-- [ ] `node_modules/` (frontend araçları varsa)
-- [ ] `*.sqlite`, `*.db` (yerel test db'leri)
+- [x] `/target`, `**/target`
+- [x] `.env`, `.env.local`, `.env.*.local` (**gerçek şifreler ASLA repoda olmaz**)
+- [x] `*.log`, `logs/`
+- [x] `docs/screenshots/*.tmp`, `*.swp`
+- [x] `static/uploads/` (kullanıcı yüklemesi varsa)
+- [x] `.DS_Store`, `Thumbs.db`
+- [x] `node_modules/` (frontend araçları varsa)
+- [x] `*.sqlite`, `*.db` (yerel test db'leri)
 
 ### 1.3 — `.env.example` (anahtar isimleri, gerçek değer YOK)
-- [ ] ```
+- [x] ```
   # Veritabanı
   DATABASE_URL=postgres://app:CHANGEME@localhost:5432/owasp_lab
   POSTGRES_USER=app
@@ -212,39 +212,39 @@ HTTP request
   SESSION_SECRET=CHANGE_ME_64_RANDOM_BYTES
   RUST_LOG=info
   ```
-- [ ] README'ye not: "Çalıştırmadan önce `.env.example` → `.env` kopyala, değerleri doldur"
+- [x] README'ye not: "Çalıştırmadan önce `.env.example` → `.env` kopyala, değerleri doldur"
 
 ### 1.4 — Kalite & düzen dosyaları
-- [ ] `.editorconfig`: `indent_size=4`, `end_of_line=lf`, `charset=utf-8`, `insert_final_newline=true`, `trim_trailing_whitespace=true`
-- [ ] `rustfmt.toml`: `max_width = 100`, `edition = "2021"`
-- [ ] `clippy` lint seviyesi: `src/main.rs` üstüne `#![warn(clippy::unwrap_used, clippy::expect_used)]`
+- [x] `.editorconfig`: `indent_size=4`, `end_of_line=lf`, `charset=utf-8`, `insert_final_newline=true`, `trim_trailing_whitespace=true`
+- [x] `rustfmt.toml`: `max_width = 100`, `edition = "2021"`
+- [x] `clippy` lint seviyesi: `src/main.rs` üstüne `#![warn(clippy::unwrap_used, clippy::expect_used)]`
 
 ### 1.5 — Lisans & README iskeleti
-- [ ] `LICENSE` (MIT)
-- [ ] `README.md` başlıkları: Proje amacı, Mimari, Kurulum, Çalıştırma (iki mod), Sömürü adımları, Azaltma özeti, Etik not
-- [ ] `.dockerignore`: `target/`, `.git/`, `.env`, `docs/`, `exploits/`, `tests/`
+- [x] `LICENSE` (MIT)
+- [x] `README.md` başlıkları: Proje amacı, Mimari, Kurulum, Çalıştırma (iki mod), Sömürü adımları, Azaltma özeti, Etik not
+- [x] `.dockerignore`: `target/`, `.git/`, `.env`, `docs/`, `exploits/`, `tests/`
 
 ---
 
 ## 🗄️ Faz 2 — Veritabanı Tasarımı & Bağlantı Katmanı
 
 ### 2.1 — Bağımlılıklar (`Cargo.toml`)
-- [ ] `axum = "0.7"`
-- [ ] `tokio = { version = "1", features = ["full"] }`
-- [ ] `sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "macros", "chrono"] }`
-- [ ] `serde = { version = "1", features = ["derive"] }` + `serde_json = "1"`
-- [ ] `argon2 = "0.5"` — parola hash
-- [ ] `rand = "0.8"` — kriptografik rastgele (oturum token)
-- [ ] `askama = "0.12"` + `askama_axum = "0.4"` — template (auto-escape)
-- [ ] `tower = "0.4"` + `tower-http = { version = "0.5", features = ["limit", "trace", "set-header"] }`
-- [ ] `tower_governor = "0.3"` — rate limit (secure modda)
-- [ ] `thiserror = "1"`
-- [ ] `tracing` + `tracing-subscriber`
-- [ ] `dotenvy = "0.15"`
-- [ ] `chrono = { version = "0.4", features = ["serde"] }`
-- [ ] `ammonia = "4"` — HTML sanitization (secure modda, zengin metin için)
-- [ ] `async-trait = "0.1"`
-- [ ] `[dev-dependencies]`: `reqwest = { version = "0.12", features = ["cookies","json"] }`, `tokio` test
+- [x] `axum = "0.7"`
+- [x] `tokio = { version = "1", features = ["full"] }`
+- [x] `sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "macros", "chrono"] }`
+- [x] `serde = { version = "1", features = ["derive"] }` + `serde_json = "1"`
+- [x] `argon2 = "0.5"` — parola hash
+- [x] `rand = "0.8"` — kriptografik rastgele (oturum token)
+- [x] `askama = "0.12"` + `askama_axum = "0.4"` — template (auto-escape)
+- [x] `tower = "0.4"` + `tower-http = { version = "0.5", features = ["limit", "trace", "set-header"] }`
+- [x] `tower_governor = "0.3"` — rate limit (secure modda)
+- [x] `thiserror = "1"`
+- [x] `tracing` + `tracing-subscriber`
+- [x] `dotenvy = "0.15"`
+- [x] `chrono = { version = "0.4", features = ["serde"] }`
+- [x] `ammonia = "4"` — HTML sanitization (secure modda, zengin metin için)
+- [x] `async-trait = "0.1"`
+- [x] `[dev-dependencies]`: `reqwest = { version = "0.12", features = ["cookies","json"] }`, `tokio` test
 
 ### 2.2 — Şema migration'ları
 
