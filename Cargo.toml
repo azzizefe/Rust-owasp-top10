@@ -25,6 +25,6 @@ ammonia = "4"
 async-trait = "0.1"
 base64 = "0.22"
 url = "2.5"
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", features = ["json", "cookies"] }
 
 [dev-dependencies]

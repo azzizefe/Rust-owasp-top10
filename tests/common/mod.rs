@@ -17,7 +17,10 @@ pub async fn spawn_app(mode: AppMode) -> TestApp {
     let db_url = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/owasp_lab".to_string());
 
-    let db_pool = PgPool::connect(&db_url)
+    use sqlx::postgres::PgPoolOptions;
+    let db_pool = PgPoolOptions::new()
+        .max_connections(2) // Paralel entegrasyon testlerinde DB tıkanıklığını önlemek için sınırlandırıyoruz
+        .connect(&db_url)
         .await
         .expect("Test sunucusu veritabanına bağlanamadı");
 
@@ -38,10 +41,13 @@ pub async fn spawn_app(mode: AppMode) -> TestApp {
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
 
+    let tokio_listener = tokio::net::TcpListener::from_std(listener)
+        .expect("TcpListener tokio'ya dönüştürülemedi");
+
     // 5. Router'ı oluştur ve arka planda tokio ile ayağa kaldır
     let router = create_router(state);
     tokio::spawn(async move {
-        axum::serve(listener, router).await.unwrap();
+        axum::serve(tokio_listener, router).await.unwrap();
     });
 
     TestApp { address, db_pool }
