@@ -695,24 +695,24 @@ HTTP request
 
 ## ⚠️ Etik & Yasal Not (mutlaka oku ve rapora ekle)
 
-- [ ] Zafiyetli kod **yalnızca izole localhost/Docker** ortamında çalışır; internete açık deploy **edilmez**.
-- [ ] Tüm sömürü PoC'leri **kendi uygulamana** karşıdır. Sahip olmadığın/izin almadığın bir sisteme SQLi/XSS/brute-force denemek **birçok ülkede suçtur** (ör. yetkisiz erişim yasaları).
-- [ ] PoC'ler **zararsızdır:** `alert()`, okuma, bypass gösterimi — veri yıkımı, dışarı sızdırma, kalıcı zarar **yok**.
-- [ ] `vulnerable.rs` açıkça etiketlidir ve secure sürümle birlikte tutulur; tek başına deploy edilebilir tek yol değildir.
-- [ ] Bu proje **savunma odaklıdır:** amaç kendi kodunu güvenli yazmayı öğrenmek ve azaltmaları belgelemektir.
+- [x] Zafiyetli kod **yalnızca izole localhost/Docker** ortamında çalışır; internete açık deploy **edilmez**.
+- [x] Tüm sömürü PoC'leri **kendi uygulamana** karşıdır. Sahip olmadığın/izin almadığın bir sisteme SQLi/XSS/brute-force denemek **birçok ülkede suçtur** (ör. yetkisiz erişim yasaları).
+- [x] PoC'ler **zararsızdır:** `alert()`, okuma, bypass gösterimi — veri yıkımı, dışarı sızdırma, kalıcı zarar **yok**.
+- [x] `vulnerable.rs` açıkça etiketlidir ve secure sürümle birlikte tutulur; tek başına deploy edilebilir tek yol değildir.
+- [x] Bu proje **savunma odaklıdır:** amaç kendi kodunu güvenli yazmayı öğrenmek ve azaltmaları belgelemektir.
 
 ---
 
 ## 💡 Öğrenme Çıktıları (CV/portfolyoda vurgula)
 
-- [ ] En güncel **OWASP 2025/2026** Top 10 standartlarını gerçek bir projede tatbik etme
-- [ ] Zero-Trust mimari ve "Secure by Design" (Tasarım Aşamasında Güvenlik) prensipleri
-- [ ] Tedarik zinciri güvenliği (`cargo audit`) ve Build süreci zehirlenmelerine karşı önlemler (A03)
-- [ ] Rust'ın güçlü tip sistemi ve error handling özellikleri ile "Exceptional Conditions" (A10) zaaflarını (panic, DoS) yok etme
-- [ ] Parametreli sorgu / prepared statement ile modern SQLi engelleme
-- [ ] Derinlemesine savunma: Output escaping + CSP + Signed Cookies + HSTS
-- [ ] "Zafiyeti sömür → Rust ile çöz → E2E otomasyonla kanıtla" güvenlik döngüsü
-- [ ] Profesyonel ve vizyoner bir güvenlik araştırma raporu yazımı
+- [x] En güncel **OWASP 2025/2026** Top 10 standartlarını gerçek bir projede tatbik etme
+- [x] Zero-Trust mimari ve "Secure by Design" (Tasarım Aşamasında Güvenlik) prensipleri
+- [x] Tedarik zinciri güvenliği (`cargo audit`) ve Build süreci zehirlenmelerine karşı önlemler (A03)
+- [x] Rust'ın güçlü tip sistemi ve error handling özellikleri ile "Exceptional Conditions" (A10) zaaflarını (panic, DoS) yok etme
+- [x] Parametreli sorgu / prepared statement ile modern SQLi engelleme
+- [x] Derinlemesine savunma: Output escaping + CSP + Signed Cookies + HSTS
+- [x] "Zafiyeti sömür → Rust ile çöz → E2E otomasyonla kanıtla" güvenlik döngüsü
+- [x] Profesyonel ve vizyoner bir güvenlik araştırma raporu yazımı
 
 ---
 
@@ -738,7 +738,7 @@ HTTP request
 > Bu iskeletler "boş sayfa" sorununu çözer. Doldurman gereken yerler `// TODO` ile işaretli.
 
 ### A.1 — `src/main.rs` iskeleti
-- [ ] ```rust
+- [x] ```rust
   mod config; mod db; mod error; mod models; mod session;
   mod middleware; mod templates; mod routes;
   mod auth; mod handlers;
@@ -768,7 +768,7 @@ HTTP request
   ```
 
 ### A.2 — `auth/mod.rs` trait iskeleti
-- [ ] ```rust
+- [x] ```rust
   use async_trait::async_trait;
   use crate::{models::*, error::ApiError, config::AppMode};
   use std::sync::Arc;
@@ -794,7 +794,7 @@ HTTP request
   ```
 
 ### A.3 — `error.rs` IntoResponse iskeleti
-- [ ] ```rust
+- [x] ```rust
   use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
   use serde_json::json;
 
@@ -818,7 +818,7 @@ HTTP request
   ```
 
 ### A.4 — `middleware.rs` güvenlik header iskeleti (secure mod)
-- [ ] ```rust
+- [x] ```rust
   use tower_http::set_header::SetResponseHeaderLayer;
   use axum::http::{HeaderValue, header};
 
@@ -842,27 +842,27 @@ HTTP request
 
 ## 🪤 Ek B — Sık Karşılaşılan Tuzaklar & Çözümleri
 
-- [ ] **`sqlx::query!` derlemede DB istiyor:** Çözüm → `cargo sqlx prepare` ile `.sqlx/` cache üret, `SQLX_OFFLINE=true` set et (CI/Docker için şart).
-- [ ] **askama escape'i fazla agresif geldi:** Zengin metin için `ammonia` ile sanitize edip `| safe` filtresiyle bas — ama YALNIZCA sanitize sonrası.
-- [ ] **CSP her şeyi kırıyor:** Önce `Content-Security-Policy-Report-Only` ile test et, ihlalleri gör, sonra zorunlu hale getir.
-- [ ] **Rate limit testte de tetikleniyor:** Test ortamında limiti yükselt veya IP'yi değiştir; secure_mode brute-force testinde bilinçli düşür.
-- [ ] **Cookie `Secure` yerelde çalışmıyor:** HTTPS olmayan localhost'ta `Secure` flag cookie'yi engelleyebilir; geliştirmede ayrı, üretimde açık tut (env ile).
-- [ ] **Postgres bağlantısı CI'da hazır değil:** `pg_isready` healthcheck + `depends_on: condition: service_healthy` kullan.
-- [ ] **Vulnerable kod yanlışlıkla clippy'yi bozuyor:** `vulnerable.rs` üstüne `#[allow(clippy::all)]` + açık yorum koy; bilinçli kötü kod olduğunu belirt.
-- [ ] **argon2 yavaş, testleri uzatıyor:** Testlerde düşük cost parametresi kullan (üretimde varsayılan/yüksek).
-- [ ] **IDOR düzeltmesini her handler'da tekrar yazıyorsun:** Oturum + sahiplik kontrolünü bir axum extractor'a taşı, DRY kal.
+- [x] **`sqlx::query!` derlemede DB istiyor:** Çözüm → `cargo sqlx prepare` ile `.sqlx/` cache üret, `SQLX_OFFLINE=true` set et (CI/Docker için şart).
+- [x] **askama escape'i fazla agresif geldi:** Zengin metin için `ammonia` ile sanitize edip `| safe` filtresiyle bas — ama YALNIZCA sanitize sonrası.
+- [x] **CSP her şeyi kırıyor:** Önce `Content-Security-Policy-Report-Only` ile test et, ihlalleri gör, sonra zorunlu hale getir.
+- [x] **Rate limit testte de tetikleniyor:** Test ortamında limiti yükselt veya IP'yi değiştir; secure_mode brute-force testinde bilinçli düşür.
+- [x] **Cookie `Secure` yerelde çalışmıyor:** HTTPS olmayan localhost'ta `Secure` flag cookie'yi engelleyebilir; geliştirmede ayrı, üretimde açık tut (env ile).
+- [x] **Postgres bağlantısı CI'da hazır değil:** `pg_isready` healthcheck + `depends_on: condition: service_healthy` kullan.
+- [x] **Vulnerable kod yanlışlıkla clippy'yi bozuyor:** `vulnerable.rs` üstüne `#[allow(clippy::all)]` + açık yorum koy; bilinçli kötü kod olduğunu belirt.
+- [x] **argon2 yavaş, testleri uzatıyor:** Testlerde düşük cost parametresi kullan (üretimde varsayılan/yüksek).
+- [x] **IDOR düzeltmesini her handler'da tekrar yazıyorsun:** Oturum + sahiplik kontrolünü bir axum extractor'a taşı, DRY kal.
 
 ---
 
 ## 📊 Ek C — Demo Senaryosu (sunum/jüri için 3 dakikalık akış)
 
-- [ ] **0:00** — "İşte kayıt/giriş uygulamam, iki modda çalışıyor."
-- [ ] **0:20** — `APP_MODE=vulnerable`: login'e `' OR '1'='1' --` yaz → **giriş açıldı** (ekranda göster)
-- [ ] **0:50** — arama kutusuna `<script>alert('XSS')</script>` → **alert patladı**
-- [ ] **1:20** — `/profile/2`, `/profile/3` gez → **başkasının verisi** (IDOR)
-- [ ] **1:50** — "Şimdi tek satır değiştirmeden, sadece modu değiştiriyorum." → `APP_MODE=secure`
-- [ ] **2:10** — Aynı SQLi → **401**. Aynı XSS → **escape edilmiş metin**. Aynı IDOR → **403**.
-- [ ] **2:40** — "Ve hepsi otomatik testlerle kanıtlı:" `cargo test` → yeşil
-- [ ] **3:00** — `owasp-report.md` önce/sonra tablosunu göster → kapanış
+- [x] **0:00** — "İşte kayıt/giriş uygulamam, iki modda çalışıyor."
+- [x] **0:20** — `APP_MODE=vulnerable`: login'e `' OR '1'='1' --` yaz → **giriş açıldı** (ekranda göster)
+- [x] **0:50** — arama kutusuna `<script>alert('XSS')</script>` → **alert patladı**
+- [x] **1:20** — `/profile/2`, `/profile/3` gez → **başkasının verisi** (IDOR)
+- [x] **1:50** — "Şimdi tek satır değiştirmeden, sadece modu değiştiriyorum." → `APP_MODE=secure`
+- [x] **2:10** — Aynı SQLi → **401**. Aynı XSS → **escape edilmiş metin**. Aynı IDOR → **403**.
+- [x] **2:40** — "Ve hepsi otomatik testlerle kanıtlı:" `cargo test` → yeşil
+- [x] **3:00** — `owasp-report.md` önce/sonra tablosunu göster → kapanış
 
 > Bu senaryo, "anladığını" değil "uygulayıp kanıtladığını" gösterir — değerlendirmede en yüksek puanı bu getirir.
