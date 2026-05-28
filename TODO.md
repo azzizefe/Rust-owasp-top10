@@ -289,13 +289,13 @@ HTTP request
 - [ ] `cargo sqlx prepare` → offline sorgu metadata cache'i (`.sqlx/`), CI/Docker için
 
 ### 2.4 — Bağlantı katmanı (`src/db.rs`)
-- [ ] `pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error>`
-- [ ] `PgPoolOptions` ile `max_connections`, `acquire_timeout`
-- [ ] `pub async fn run_migrations(pool: &PgPool)` → `sqlx::migrate!()`
-- [ ] Bağlantı hatasında düzgün log + temiz çıkış (panic değil)
+- [x] `pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error>`
+- [x] `PgPoolOptions` ile `max_connections`, `acquire_timeout`
+- [x] `pub async fn run_migrations(pool: &PgPool)` → `sqlx::migrate!()`
+- [x] Bağlantı hatasında düzgün log + temiz çıkış (panic değil)
 
 ### 2.5 — Config (`src/config.rs`)
-- [ ] ```rust
+- [x] ```rust
   pub enum AppMode { Vulnerable, Secure }
   pub struct Config {
       pub database_url: String,
@@ -304,9 +304,9 @@ HTTP request
       pub session_secret: String,
   }
   ```
-- [ ] `Config::from_env()` → `dotenvy::dotenv()` + `std::env::var`
-- [ ] `APP_MODE` parse; geçersizse default `Secure` (güvenli varsayılan ilkesi)
-- [ ] Eksik kritik env → açık hata mesajı (panic değil, düzgün exit)
+- [x] `Config::from_env()` → `dotenvy::dotenv()` + `std::env::var`
+- [x] `APP_MODE` parse; geçersizse default `Secure` (güvenli varsayılan ilkesi)
+- [x] Eksik kritik env → açık hata mesajı (panic değil, düzgün exit)
 
 ---
 
