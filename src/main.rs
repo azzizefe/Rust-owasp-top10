@@ -5,16 +5,7 @@
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod auth;
-mod config;
-mod db;
-mod error;
-mod handlers;
-mod middleware;
-mod models;
-mod routes;
-mod session;
-mod templates;
+use rust_owasp_top10::{auth, config, db, routes};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
