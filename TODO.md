@@ -155,26 +155,26 @@ HTTP request
 ## 📋 Faz 0 — Ön Hazırlık & Ortam Kurulumu
 
 ### 0.1 — Araç kurulumu
-- [ ] `rustc --version` ≥ 1.74 doğrula (yoksa `rustup update`)
-- [ ] `cargo --version` çalışıyor
-- [ ] `rustup component add clippy rustfmt`
-- [ ] Docker Desktop / Engine kurulu (`docker --version`)
-- [ ] Docker Compose v2 (`docker compose version`)
-- [ ] `cargo install sqlx-cli --no-default-features --features postgres`
-- [ ] (opsiyonel) `cargo install cargo-audit` — bağımlılık CVE taraması
-- [ ] (opsiyonel) `cargo install cargo-watch` — geliştirme sırasında auto-reload
+- [x] `rustc --version` ≥ 1.74 doğrula (yoksa `rustup update`)
+- [x] `cargo --version` çalışıyor
+- [x] `rustup component add clippy rustfmt`
+- [x] Docker Desktop / Engine kurulu (`docker --version`)
+- [x] Docker Compose v2 (`docker compose version`)
+- [x] `cargo install sqlx-cli --no-default-features --features postgres`
+- [x] (opsiyonel) `cargo install cargo-audit` — bağımlılık CVE taraması
+- [x] (opsiyonel) `cargo install cargo-watch` — geliştirme sırasında auto-reload
 
 ### 0.2 — Bilgi ön gereksinimleri (eksikse önce bunları gözden geçir)
-- [ ] HTTP request/response yaşam döngüsü
-- [ ] SQL temel sorguları (SELECT/INSERT/WHERE)
-- [ ] HTML/JS temel (XSS'i anlamak için)
-- [ ] Async/await temel mantığı (tokio)
+- [x] HTTP request/response yaşam döngüsü
+- [x] SQL temel sorguları (SELECT/INSERT/WHERE)
+- [x] HTML/JS temel (XSS'i anlamak için)
+- [x] Async/await temel mantığı (tokio)
 
 ### 0.3 — Proje başlangıcı
-- [ ] Klasör: `mkdir owasp-mitigation-lab && cd $_`
-- [ ] `git init`
-- [ ] İlk boş commit: `git commit --allow-empty -m "chore: init project"`
-- [ ] `rust-toolchain.toml` yaz:
+- [x] Klasör: `mkdir owasp-mitigation-lab && cd $_` (Mevcut flat workspace kullanıldı)
+- [x] `git init`
+- [x] İlk boş commit: `git commit --allow-empty -m "chore: init project"`
+- [x] `rust-toolchain.toml` yaz:
   ```toml
   [toolchain]
   channel = "stable"
