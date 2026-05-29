@@ -3,9 +3,10 @@
   <br>
   
   # 🛡️ Rust OWASP Top 10 (2026 Next-Gen) Security Lab
-  ### 🍌 featuring the "Nano Banana" Cyber Mascot
+  ### 🍌 Featuring the "Nano Banana" Cyber Mascot
   
   <p align="center">
+    <a href="https://github.com/azzizefe/Rust-owasp-top10/stargazers"><img src="https://img.shields.io/github/stars/azzizefe/Rust-owasp-top10?style=for-the-badge&color=yellow" alt="Stars"></a>
     <img src="https://img.shields.io/badge/Language-Rust-orange?style=for-the-badge&logo=rust" alt="Rust">
     <img src="https://img.shields.io/badge/Framework-Axum-brightgreen?style=for-the-badge&logo=rust" alt="Axum">
     <img src="https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
@@ -13,105 +14,116 @@
     <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License">
   </p>
 
-  **İstinye Üniversitesi - Web Güvenliği Final Projesi**<br>
-  **Danışman:** Keyvan Arasteh | **Geliştirici:** Aziz Efe
+  **Academic Affiliation:** İstinye University - Web Security Final Project<br>
+  **Advisor:** Keyvan Arasteh | **Developer:** Aziz Efe
   
   <br>
 </div>
 
 ---
 
-## 🚀 Projenin Amacı ve Felsefesi
+## 🚀 Project Philosophy & Dynamic Architecture
 
-Bu proje, modern ve güvenli yazılım geliştirme standartlarını en üst düzeyde göstermek amacıyla **Rust (Axum, SQLx, Postgres)** mimarisiyle inşa edilmiş dinamik bir **OWASP Top 10 (2026 Next-Gen) Güvenlik Laboratuvarıdır**.
+**Rust OWASP Top 10 Security Lab** is an interactive, production-grade cybersecurity laboratory built entirely in **Rust (Axum, SQLx, PostgreSQL)**. The project is designed under the **"Expose First, Mitigate Next"** paradigm.
 
-Sistemin kalbinde **"Dual-Mode" (Çift Modlu)** bir mimari yer alır. Tek bir kod tabanı üzerinden, `.env` dosyasındaki `APP_MODE` değişkenine bağlı olarak iki tamamen zıt güvenlik duruşuna geçiş yapabilir:
+The core of the application features a unique **Dual-Mode Architecture**. With a single environment variable toggle (`APP_MODE` in `.env`), the application entirely changes its security posture at runtime:
 
-1. **🔴 Vulnerable Mod (`APP_MODE=vulnerable`):** Güvenlik açıklarının anatomisini öğrenmek ve sömürü (PoC) scriptlerini test etmek için tasarlanmış, kasıtlı zafiyetler barındıran mod.
-2. **🟢 Secure Mod (`APP_MODE=secure`):** Aynı uygulamanın tam korumalı, kurumsal standartlarda zırhlandırılmış halidir. Zafiyetli modda çalışan tüm istismarlar, Secure modda anında bloklanır.
-
----
-
-## ⚡ Neden Bu Proje Öne Çıkıyor? (GitHub Star Faktörü)
-
-Sıradan güvenlik laboratuvarlarının aksine, bu projede uygulanan **ileri düzey mühendislik ve savunma refleksleri**:
-
-* 🛡️ **Timing Attack (Zamanlama) Kalkanı (A07):** Oturum açarken kullanıcı adı DB'de **yoksa bile** arka planda yapay bir Argon2id parola doğrulaması (**Dummy Hash Verification**) tetiklenerek yanıt süresi eşitlenmiş ve kullanıcı keşfi (enumeration) engellenmiştir.
-* 🛰️ **Ağ Seviyesinde SSRF Engeli (A01):** `/fetch` servisinde IP çözümlemesi yapılarak `127.0.0.1`, `localhost` veya AWS/Cloud Metadata IP'leri (`169.254.169.254`) **ağ katmanında strictly engellenir**.
-* 🦀 **Derleme Zamanında SAST Güvenliği:** SQL sorguları `sqlx::query_as!` ile derleme zamanında DB şemasına göre kontrol edilir. **Enjeksiyon riski varsa kod derlenmez!**
-* 🧪 **%100 Otomatik Doğrulama (E2E Test Suite):** `tests/` dizinindeki 10 adet asenkron entegrasyon testi, hem zafiyetlerin sömürülmesini hem de güvenli modda başarıyla kapatıldığını otomatik olarak ispatlar.
+1. **🔴 Vulnerable Mode (`APP_MODE=vulnerable`):** 
+   Intentionally exposes critical next-generation OWASP vulnerabilities (e.g., Raw SQL concatenations, unescaped output rendering, authorization-free resource paths). Perfect for understanding exploitation anatomy and testing PoC payloads.
+   
+2. **🟢 Secure Mode (`APP_MODE=secure`):** 
+   Instantly transforms into a hardened, zero-trust system. All database queries run under compile-time verified parameterized statements (`sqlx`), outputs are automatically escaped (`Askama`), passwords are mathematically hashed with high-cost `Argon2id`, and Tower middlewares enforce strict `Content-Security-Policy` and rate limiting. Any attack payload that worked in Vulnerable mode is immediately blocked with **401 Unauthorized** or **403 Forbidden**.
 
 ---
 
-## 🛠️ Teknoloji Yığını (Tech Stack)
+## ⚡ What Makes This Lab Stand Out? (GitHub Star Factors)
+
+Unlike basic security demonstrations, this lab integrates cutting-edge security mechanisms that are highly appreciated by industry professionals:
+
+* 🛡️ **Timing Attack Mitigation (A07:2026):**
+  When attempting login with a non-existent username, standard systems return a response instantly, enabling *User Enumeration*. This lab runs a background **Dummy Argon2id Hash Verification** to match response times, neutralizing timing analysis entirely.
+* 🛰️ **Network-Level SSRF Shielding (A01:2026):**
+  The URL-fetching service (`/fetch`) performs active DNS resolution and strictly blocks internal networks, loopbacks (`127.0.0.1`, `localhost`), and cloud metadata IPs (`169.254.169.254`) on the socket layer.
+* 🦀 **Compile-Time SAST Guarantees (A04:2026):**
+  Uses `sqlx::query_as!` to cross-validate SQL queries against the active PostgreSQL database schema during compilation. **If there is an injection risk or syntax mismatch, the code fails to compile!**
+* 🧪 **100% Automated Proof (E2E Integration Suite):**
+  Includes 10 asynchronous End-to-End integration tests (`cargo test`) verifying both successful exploitation in Vulnerable mode and perfect mitigation in Secure mode.
+
+---
+
+## 🛠️ The Tech Stack
 
 <p align="center">
   <kbd>Rust (2021 Edition)</kbd>
   <kbd>Axum (Web Framework)</kbd>
-  <kbd>SQLx (Async SQL toolkit)</kbd>
-  <kbd>PostgreSQL</kbd>
-  <kbd>Askama (HTML templates)</kbd>
+  <kbd>SQLx (Async PostgreSQL Toolkit)</kbd>
+  <kbd>Askama (Compile-Time Templates)</kbd>
+  <kbd>Tower-Governor (Rate Limiter)</kbd>
   <kbd>Docker & Docker Compose</kbd>
 </p>
 
 ---
 
-## 📂 Sistem Bileşenleri
+## 📂 Features & Vulnerability Coverage
 
-* **Kimlik & Oturum Yönetimi:** `Argon2id` parola hashing ve güvenli, kriptografik veritabanı destekli oturum token'ları.
-* **Hız Sınırlama (Rate Limiting):** `tower_governor` katmanı ile brute-force saldırılarına karşı IP tabanlı hız sınırlandırma.
-* **HTTP Güvenlik Kalkanları:** Katı `Content-Security-Policy` (CSP), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` ve `Referrer-Policy: no-referrer` başlıkları.
-* **Otomatik CI/CD:** GitHub Actions ile otomatik bağımlılık denetimi (`cargo audit`) ve kod biçimlendirme (`cargo fmt`) kontrolü.
+| OWASP Category | Vulnerability Type | Vulnerable Mode PoC | Secure Mode Mitigation |
+| :--- | :--- | :--- | :--- |
+| **A01:2026** | Broken Access Control | IDOR Profile Reading & SSRF | Ownership Verification & IP Blacklisting |
+| **A02:2026** | Cryptographic Failures | Plaintext DB storage | Argon2id Hashing & Cryptographic Session Tokens |
+| **A04:2026** | Injection | SQLi Login Bypass & Raw XSS | Parameterized SQLx Queries & Askama HTML Escaping |
+| **A06:2026** | Security Misconfiguration | Debug Endpoint Sizzles | Explicit Endpoint Disabling & Strict HTTP Headers |
+| **A07:2026** | Identification & Auth Failures | Brute-force & Timing Attacks | Tower-Governor Rate-Limit & Dummy Hash Padding |
+| **A10:2026** | Exceptional Conditions | Crash DoS via `.unwrap()` | Fail-Safe Error Mapping via Custom `ApiError` |
 
 ---
 
-## 🚀 Hızlı Başlangıç & Kurulum
+## 🚀 Quick Start & Installation
 
-Sistemi lokalinizde çalıştırmak ve test etmek son derece kolaydır:
+Getting the lab up and running takes less than two minutes:
 
-### 1. Çevre Değişkenlerini Ayarlama
+### 1. Set Up Environment Variables
 ```bash
-# Örnek yapılandırmayı kopyalayın
+# Copy the example configuration
 cp .env.example .env
 ```
-*(Güvenlik seviyesini değiştirmek için `.env` içindeki `APP_MODE` değişkenini `vulnerable` veya `secure` yapabilirsiniz.)*
+*(Open `.env` and change `APP_MODE` to `vulnerable` or `secure` depending on what you want to test).*
 
-### 2. Docker ile Çalıştırma
+### 2. Launch with Docker Compose
 ```bash
-# PostgreSQL veritabanını ve web uygulamasını ayağa kaldırın
+# Spin up both the PostgreSQL DB and the Rust Web App automatically
 docker compose up --build
 ```
-Uygulama başladığında tarayıcınızdan `http://localhost:8080` adresine giderek **Nano Banana** temalı labı kullanmaya başlayabilirsiniz.
+Once the compilation completes, navigate to `http://localhost:8080` in your browser to meet the **Nano Banana** cyber mascot and start testing!
 
-### 3. Otomatik Testleri Çalıştırma
+### 3. Run Automated Integration Tests
 ```bash
 cargo test
 ```
 
 ---
 
-## 🎬 Hazır Sömürü Senaryoları (Exploits)
+## 🎬 Pre-Packaged Exploitation Scripts
 
-Proje içerisindeki `exploits/` dizininde, zafiyetleri tetikleyen hazır test senaryoları mevcuttur:
-* **SQL Injection Login Bypass:** Kasıtlı string birleştirmeli SQL sorgularını sömürür.
-* **Reflected XSS:** Çıktı kaçışı olmayan arama motoru girdisine script enjekte eder.
-* **IDOR (Insecure Direct Object Reference):** Oturum sahipliği doğrulanmadan diğer kullanıcı profillerine sızar.
-* **SSRF (Server-Side Request Forgery):** Sunucu üzerinden localhost ve iç ağ taraması yapar.
-
----
-
-## 🌟 Destek Olun ve Yıldız Bırakın!
-
-Eğer bu interaktif Rust güvenlik laboratuvarı hoşunuza gittiyse veya siber güvenlik çalışmalarınızda size yardımcı olduysa, projeye **Star (Yıldız) 🌟** bırakarak destek olabilirsiniz! 
+The `exploits/` directory contains ready-to-use proof-of-concept scripts to demonstrate vulnerabilities:
+* **SQL Injection Bypass:** Bypass login authentication without a valid password.
+* **Reflected XSS:** Inject arbitrary HTML and scripts through the search box.
+* **IDOR:** Access unauthorized user profiles by tampering with the URL.
+* **SSRF:** Perform an internal port scan through the server.
 
 ---
 
-## ⚖️ Etik Uyarı
+## 🌟 Show Your Support!
 
-Bu laboratuvardaki tüm sömürü senaryoları yalnızca **yerel (localhost) ortamlarda, siber güvenlik eğitim ve akademik araştırma amaçlarıyla** çalıştırılmak üzere tasarlanmıştır. Bu projede öğrenilen teknikler kullanılarak gerçek sistemlere veya izin alınmamış ağlara yönelik hiçbir saldırı gerçekleştirilemez. Sorumluluk tamamen kullanıcıya aittir. Yalnızca savunma (Defensive Security) amacıyla tasarlanmıştır.
+If you found this interactive Rust Security Lab educational or useful, please support the project by giving it a **Star 🌟**! It helps the project gain visibility and reach more security researchers and developers globally.
 
 ---
 
-## 📄 Lisans
+## ⚖️ Ethical Disclaimer
 
-Bu proje **MIT Lisansı** altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına göz atabilirsiniz.
+This security lab is intended **solely for local educational, academic research, and defensive training purposes**. Executing these exploits against unauthorized external systems is illegal. The developer and advisors assume no liability for misuse. Always practice responsible disclosure.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
