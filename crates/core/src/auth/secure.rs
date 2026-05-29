@@ -3,11 +3,11 @@ use argon2::{
     Argon2, PasswordHash,
 };
 use async_trait::async_trait;
-use sqlx::PgPool;
-use tracing::warn;
+use chrono::{Duration, Utc};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
-use chrono::{Duration, Utc};
+use sqlx::PgPool;
+use tracing::warn;
 
 use crate::auth::AuthBackend;
 use crate::error::ApiError;

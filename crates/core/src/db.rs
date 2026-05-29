@@ -1,11 +1,11 @@
 // crates/core/src/db.rs
 
+use crate::error::ApiError;
+use futures::future::BoxFuture;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use sqlx::{Postgres, Transaction};
 use std::time::Duration;
 use tracing::{error, info};
-use futures::future::BoxFuture;
-use crate::error::ApiError;
 
 pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error> {
     info!("Veritabanına bağlanılıyor...");
@@ -13,9 +13,9 @@ pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error> {
     // 🛡️ GÜVENLİ VE OPTİMİZE BAĞLANTI HAVUZU AYARLARI (Phase 5.2)
     let pool = PgPoolOptions::new()
         .max_connections(10) // Docker / microservice ortamı için makul üst sınır
-        .min_connections(2)  // Soğuk başlangıç gecikmelerini engellemek için warm pool
+        .min_connections(2) // Soğuk başlangıç gecikmelerini engellemek için warm pool
         .acquire_timeout(Duration::from_secs(5)) // Bağlantı alamama durumunda max bekleme süresi
-        .idle_timeout(Duration::from_secs(600))  // Boştaki bağlantıların kapatılma süresi (10 dk)
+        .idle_timeout(Duration::from_secs(600)) // Boştaki bağlantıların kapatılma süresi (10 dk)
         .max_lifetime(Duration::from_secs(1800)) // Bağlantıların maksimum ömrü (30 dk)
         .connect(url)
         .await

@@ -39,7 +39,9 @@ pub async fn authenticate(
                 let (sign_key, enc_key) = owasp_core::crypto::derive_keys(secret_bytes);
 
                 // HMAC imzasını doğrula
-                if let Ok(encrypted) = owasp_core::crypto::verify_cookie(&sign_key, &signed_encrypted) {
+                if let Ok(encrypted) =
+                    owasp_core::crypto::verify_cookie(&sign_key, &signed_encrypted)
+                {
                     // AES-GCM şifresini çözerek ham session token'ı elde et
                     if let Ok(token) = owasp_core::crypto::decrypt_cookie(&enc_key, &encrypted) {
                         if let Ok(Some((_session, user))) =

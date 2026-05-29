@@ -104,7 +104,9 @@ async fn shutdown_signal(pool: sqlx::PgPool) {
 
     #[cfg(unix)]
     let terminate = async {
-        if let Ok(mut sig) = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+        if let Ok(mut sig) =
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+        {
             sig.recv().await;
         }
     };
@@ -118,7 +120,7 @@ async fn shutdown_signal(pool: sqlx::PgPool) {
     }
 
     warn!("Server shutting down gracefully...");
-    
+
     // Aktif bağlantıların bitmesini bekleyerek bağlantı havuzunu kapatır
     pool.close().await;
     info!("Veritabanı bağlantı havuzu başarıyla kapatıldı.");

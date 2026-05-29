@@ -20,7 +20,8 @@ pub async fn correlation_id(mut request: Request<Body>, next: Next) -> Response 
             format!("{:x}", rand::random::<u128>())
         });
 
-    let header_val = HeaderValue::from_str(&request_id).unwrap_or_else(|_| HeaderValue::from_static(""));
+    let header_val =
+        HeaderValue::from_str(&request_id).unwrap_or_else(|_| HeaderValue::from_static(""));
 
     // 2. Request Extensions'a ekle (gerekirse handler'lar veya diğer katmanlar okuyabilsin)
     request.extensions_mut().insert(header_val.clone());

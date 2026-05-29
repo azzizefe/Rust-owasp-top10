@@ -39,7 +39,7 @@ The core of the application features a unique **Dual-Mode Architecture**. With a
 
 ## ⚡ What Makes This Lab Stand Out? (GitHub Star Factors)
 
-Unlike basic security demonstrations, this lab integrates cutting-edge security mechanisms that are highly appreciated by industry professionals:
+Unlike basic security demonstrations, this lab integrates cutting-edge security mechanisms and a world-class architecture that are highly appreciated by staff engineers and industry professionals:
 
 * 🛡️ **Timing Attack Mitigation (A07:2026):**
   When attempting login with a non-existent username, standard systems return a response instantly, enabling *User Enumeration*. This lab runs a background **Dummy Argon2id Hash Verification** to match response times, neutralizing timing analysis entirely.
@@ -47,6 +47,16 @@ Unlike basic security demonstrations, this lab integrates cutting-edge security 
   The URL-fetching service (`/fetch`) performs active DNS resolution and strictly blocks internal networks, loopbacks (`127.0.0.1`, `localhost`), and cloud metadata IPs (`169.254.169.254`) on the socket layer.
 * 🦀 **Compile-Time SAST Guarantees (A04:2026):**
   Uses `sqlx::query_as!` to cross-validate SQL queries against the active PostgreSQL database schema during compilation. **If there is an injection risk or syntax mismatch, the code fails to compile!**
+* 📦 **Modular Cargo Workspace (Phase 1):**
+  Decouples the business domain entirely from HTTP transport. The project is split into `crates/core` (pure domain model, DB layers) and `crates/web` (routing, templates, HTTP middleware).
+* 🛡️ **Declarative RBAC Middlwares (Phase 2):**
+  Features declarative route guards (`require_admin`, `require_user`) utilizing request extensions extraction for $O(1)$ zero-duplicate database lookups.
+* 📊 **Correlation ID & Structured SIEM Logs (Phase 3 - A09:2026):**
+  Assigns a unique `X-Request-Id` to every asynchronous task scope. Generates structured JSON SIEM logs targeting `"security_audit"` for real-time threat auditing.
+* 🔒 **AEAD Encrypted & Signed Tamper-Proof Cookies (Phase 4 - A02:2026):**
+  Uses **AES-256-GCM** and **HMAC-SHA256** combined with deterministic HKDF key derivation to protect transport-layer session tokens against theft and tampering.
+* ⚡ **Atomic DB Transactions & Graceful Shutdown (Phase 5 - A05:2026):**
+  Utilizes generic Higher-Rank Trait Bounds (HRTB) transaction helper (`with_tx`) guaranteeing atomic operations for user registration and logins, coupled with active `pool.close().await` graceful shutdown and Docker healthchecks.
 * 🧪 **100% Automated Proof (E2E Integration Suite):**
   Includes 10 asynchronous End-to-End integration tests (`cargo test`) verifying both successful exploitation in Vulnerable mode and perfect mitigation in Secure mode.
 

@@ -194,10 +194,7 @@ async fn test_secure_authenticated_user_unauthorized() {
 async fn test_secure_require_role_admin_forbidden() {
     let app = common::spawn_app(AppMode::Secure).await;
     // Cookie store destekleyen client
-    let client = Client::builder()
-        .cookie_store(true)
-        .build()
-        .unwrap();
+    let client = Client::builder().cookie_store(true).build().unwrap();
 
     // 1. Yeni bir normal kullanıcı kaydet
     let register_form = [
