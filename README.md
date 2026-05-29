@@ -138,4 +138,4 @@ This security lab is intended **solely for local educational, academic research,
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details
