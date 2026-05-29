@@ -73,8 +73,8 @@
 ### 2.4 — Doğrulama
 - [x] IDOR testi hâlâ yeşil (secure modda `403`)
 - [x] Debug endpoint testi hâlâ yeşil (secure modda `403`)
-- [ ] Yeni birim testi: `AuthenticatedUser` extractor oturumsuz → 401
-- [ ] Yeni birim testi: `RequireRole::Admin` normal kullanıcıyla → 403
+- [x] Yeni birim testi: `AuthenticatedUser` extractor oturumsuz → 401
+- [x] Yeni birim testi: `RequireRole::Admin` normal kullanıcıyla → 403
 
 ---
 

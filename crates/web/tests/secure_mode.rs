@@ -168,3 +168,72 @@ async fn test_secure_rate_limiting() {
         "Hızlı brute-force istekleri 429 Too Many Requests ile rate-limit'e takılmalıdır!"
     );
 }
+
+#[tokio::test]
+async fn test_secure_authenticated_user_unauthorized() {
+    let app = common::spawn_app(AppMode::Secure).await;
+    let client = Client::new();
+
+    // 🛡️ Oturum açmamış bir kullanıcının yeni post atmaya çalışması 401 dönmelidir.
+    let form = [("content", "test post")];
+    let resp = client
+        .post(format!("{}/posts", app.address))
+        .form(&form)
+        .send()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        resp.status(),
+        StatusCode::UNAUTHORIZED,
+        "Oturum açmamış kullanıcı post atmaya çalıştığında 401 Unauthorized almalıdır!"
+    );
+}
+
+#[tokio::test]
+async fn test_secure_require_role_admin_forbidden() {
+    let app = common::spawn_app(AppMode::Secure).await;
+    // Cookie store destekleyen client
+    let client = Client::builder()
+        .cookie_store(true)
+        .build()
+        .unwrap();
+
+    // 1. Yeni bir normal kullanıcı kaydet
+    let register_form = [
+        ("username", "test_user_rbac"),
+        ("email", "rbac@test.com"),
+        ("password", "StrongPass123!"),
+    ];
+    let _ = client
+        .post(format!("{}/register", app.address))
+        .form(&register_form)
+        .send()
+        .await
+        .unwrap();
+
+    // 2. Bu normal kullanıcı ile login ol (session cookie'si client'a yüklenecek)
+    let login_form = [
+        ("username", "test_user_rbac"),
+        ("password", "StrongPass123!"),
+    ];
+    let _ = client
+        .post(format!("{}/login", app.address))
+        .form(&login_form)
+        .send()
+        .await
+        .unwrap();
+
+    // 3. Normal kullanıcı yetkisiyle admin gerektiren debug endpoint'ine erişmeye çalış -> 403 Forbidden!
+    let resp = client
+        .get(format!("{}/api/debug", app.address))
+        .send()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        resp.status(),
+        StatusCode::FORBIDDEN,
+        "Normal bir kullanıcı admin debug endpoint'ine erişmek istediğinde 403 Forbidden almalıdır!"
+    );
+}
