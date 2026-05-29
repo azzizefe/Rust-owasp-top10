@@ -1,3 +1,5 @@
+<div translate="no" class="notranslate">
+
 <div align="center">
   <img src="docs/screenshots/logo.png" alt="Nano Banana Security Mascot" width="180">
   <br>
@@ -139,3 +141,5 @@ This security lab is intended **solely for local educational, academic research,
 ## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details
+
+</div>
