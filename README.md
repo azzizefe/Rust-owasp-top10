@@ -5,7 +5,6 @@
   <br>
   
   # 🛡️ Rust OWASP Top 10 (2026 Next-Gen) Security Lab
-  ### 🍌 Featuring the "Nano Banana" Cyber Mascot
   
   <p align="center">
     <a href="https://github.com/azzizefe/Rust-owasp-top10/stargazers"><img src="https://img.shields.io/github/stars/azzizefe/Rust-owasp-top10?style=for-the-badge&color=yellow" alt="Stars"></a>
