@@ -11,40 +11,40 @@
 > **Neden:** Tek crate monoliti → katmanlı, derlenme süresi düşük, sorumlulukları net ayrılmış çoklu paket mimarisi.
 
 ### 1.1 — Workspace Kök Yapısı
-- [ ] Kök `Cargo.toml`'u `[workspace]` tanımına çevir (`members = ["crates/core", "crates/web"]`)
-- [ ] `resolver = "2"` ekle (Rust 2021 workspace normu)
-- [ ] Ortak bağımlılıkları `[workspace.dependencies]` altında tanımla (sqlx, serde, chrono, thiserror, tracing)
+- [x] Kök `Cargo.toml`'u `[workspace]` tanımına çevir (`members = ["crates/core", "crates/web"]`)
+- [x] `resolver = "2"` ekle (Rust 2021 workspace normu)
+- [x] Ortak bağımlılıkları `[workspace.dependencies]` altında tanımla (sqlx, serde, chrono, thiserror, tracing)
 
 ### 1.2 — `crates/core` Paketi (Sıfır HTTP Bağımlılığı)
-- [ ] `crates/core/Cargo.toml` oluştur — sadece `sqlx`, `serde`, `argon2`, `chrono`, `thiserror`, `async-trait`
-- [ ] `models.rs` → `crates/core/src/models.rs` taşı
-- [ ] `error.rs` → `crates/core/src/error.rs` taşı (HTTP `IntoResponse` kısmını çıkar, sadece domain error)
-- [ ] `db.rs` → `crates/core/src/db.rs` taşı
-- [ ] `config.rs` → `crates/core/src/config.rs` taşı
-- [ ] `session.rs` → `crates/core/src/session.rs` taşı
-- [ ] `auth/mod.rs`, `auth/vulnerable.rs`, `auth/secure.rs` → `crates/core/src/auth/` taşı
-- [ ] `crates/core/src/lib.rs` yaz (pub mod tanımları)
-- [ ] `cargo build -p core` başarılı derleniyor
+- [x] `crates/core/Cargo.toml` oluştur — sadece `sqlx`, `serde`, `argon2`, `chrono`, `thiserror`, `async-trait`
+- [x] `models.rs` → `crates/core/src/models.rs` taşı
+- [x] `error.rs` → `crates/core/src/error.rs` taşı (HTTP `IntoResponse` kısmını çıkar, sadece domain error)
+- [x] `db.rs` → `crates/core/src/db.rs` taşı
+- [x] `config.rs` → `crates/core/src/config.rs` taşı
+- [x] `session.rs` → `crates/core/src/session.rs` taşı
+- [x] `auth/mod.rs`, `auth/vulnerable.rs`, `auth/secure.rs` → `crates/core/src/auth/` taşı
+- [x] `crates/core/src/lib.rs` yaz (pub mod tanımları)
+- [x] `cargo build -p core` başarılı derleniyor
 
 ### 1.3 — `crates/web` Paketi (HTTP Katmanı)
-- [ ] `crates/web/Cargo.toml` oluştur — `core` + `axum`, `tower`, `tower-http`, `askama`, `tower_governor`
-- [ ] `routes.rs` → `crates/web/src/routes.rs` taşı
-- [ ] `handlers/` → `crates/web/src/handlers/` taşı
-- [ ] `templates.rs` → `crates/web/src/templates.rs` taşı
-- [ ] `middleware.rs` → `crates/web/src/middleware.rs` taşı
-- [ ] `main.rs` → `crates/web/src/main.rs` taşı
-- [ ] HTTP'ye özgü `IntoResponse for ApiError` impl'ini `crates/web/src/error_response.rs`'e taşı
-- [ ] `cargo build -p web` başarılı derleniyor
+- [x] `crates/web/Cargo.toml` oluştur — `core` + `axum`, `tower`, `tower-http`, `askama`, `tower_governor`
+- [x] `routes.rs` → `crates/web/src/routes.rs` taşı
+- [x] `handlers/` → `crates/web/src/handlers/` taşı
+- [x] `templates.rs` → `crates/web/src/templates.rs` taşı
+- [x] `middleware.rs` → `crates/web/src/middleware.rs` taşı
+- [x] `main.rs` → `crates/web/src/main.rs` taşı
+- [x] HTTP'ye özgü `IntoResponse for ApiError` impl'ini `crates/web/src/error_response.rs`'e taşı
+- [x] `cargo build -p web` başarılı derleniyor
 
 ### 1.4 — Entegrasyon & Doğrulama
-- [ ] `templates/` ve `static/` dizinlerini `crates/web/` altına taşı
-- [ ] `migrations/` kök dizinde kalsın (sqlx normu)
-- [ ] `.sqlx/` offline metadata'yı yeni yapıya göre güncelle (`cargo sqlx prepare --workspace`)
-- [ ] `Dockerfile` yeni workspace yapısına göre güncelle
-- [ ] `docker-compose.yml` değişiklik gerekiyorsa güncelle
-- [ ] Tüm 10 E2E test (`cargo test`) yeşil
-- [ ] `cargo clippy --workspace -- -D warnings` temiz
-- [ ] CI pipeline (`.github/workflows/ci.yml`) workspace komutlarına güncelle
+- [x] `templates/` ve `static/` dizinlerini `crates/web/` altına taşı
+- [x] `migrations/` kök dizinde kalsın (sqlx normu)
+- [x] `.sqlx/` offline metadata'yı yeni yapıya göre güncelle (`cargo sqlx prepare --workspace`)
+- [x] `Dockerfile` yeni workspace yapısına göre güncelle
+- [x] `docker-compose.yml` değişiklik gerekiyorsa güncelle
+- [x] Tüm 10 E2E test (`cargo test`) yeşil
+- [x] `cargo clippy --workspace -- -D warnings` temiz
+- [x] CI pipeline (`.github/workflows/ci.yml`) workspace komutlarına güncelle
 
 ---
 
@@ -53,26 +53,26 @@
 > **Neden:** Handler'lar içindeki manuel `if user.role != "admin"` kontrolleri → merkezi, tip-güvenli, unutulamaz yetki katmanı.
 
 ### 2.1 — `AuthenticatedUser` Extractor
-- [ ] `crates/web/src/extractors/mod.rs` oluştur
-- [ ] `AuthenticatedUser` Axum extractor struct'ı yaz (cookie'den session çözer, `User` döner)
-- [ ] Oturum yoksa otomatik `401 Unauthorized` döner (handler'da kontrol gereksiz)
-- [ ] Mevcut `resolve_current_user` fonksiyonunu bu extractor ile değiştir
+- [x] `crates/web/src/extractors/mod.rs` oluştur
+- [x] `AuthenticatedUser` Axum extractor struct'ı yaz (cookie'den session çözer, `User` döner)
+- [x] Oturum yoksa otomatik `401 Unauthorized` döner (handler'da kontrol gereksiz)
+- [x] Mevcut `resolve_current_user` fonksiyonunu bu extractor ile değiştir
 
 ### 2.2 — `RequireRole` Guard Layer
-- [ ] `RequireRole` enum/struct tanımla (`Admin`, `User`, `Owner(i64)`)
-- [ ] Axum `middleware::from_fn` veya `tower::Layer` ile route-seviyesi guard yaz
-- [ ] Örnek kullanım: `.route("/admin/panel", get(admin_panel).route_layer(RequireRole::Admin))`
-- [ ] Yetkisiz erişimde `403 Forbidden` + audit log (`tracing::warn!`)
+- [x] `RequireRole` enum/struct tanımla (`Admin`, `User`, `Owner(i64)`)
+- [x] Axum `middleware::from_fn` veya `tower::Layer` ile route-seviyesi guard yaz
+- [x] Örnek kullanım: `.route("/admin/panel", get(admin_panel).route_layer(RequireRole::Admin))`
+- [x] Yetkisiz erişimde `403 Forbidden` + audit log (`tracing::warn!`)
 
 ### 2.3 — Handler Refaktör
-- [ ] `show_profile` handler'dan inline yetki kontrolünü kaldır → `RequireRole::Owner` kullan
-- [ ] `show_debug` handler'dan inline mod kontrolünü kaldır → guard layer kullan
-- [ ] `create_post` handler'a `AuthenticatedUser` extractor ekle
-- [ ] Tüm handler'ların ilk satırında yetki kararı OLMASIN, sadece iş mantığı
+- [x] `show_profile` handler'dan inline yetki kontrolünü kaldır → `RequireRole::Owner` kullan
+- [x] `show_debug` handler'dan inline mod kontrolünü kaldır → guard layer kullan
+- [x] `create_post` handler'a `AuthenticatedUser` extractor ekle
+- [x] Tüm handler'ların ilk satırında yetki kararı OLMASIN, sadece iş mantığı
 
 ### 2.4 — Doğrulama
-- [ ] IDOR testi hâlâ yeşil (secure modda `403`)
-- [ ] Debug endpoint testi hâlâ yeşil (secure modda `403`)
+- [x] IDOR testi hâlâ yeşil (secure modda `403`)
+- [x] Debug endpoint testi hâlâ yeşil (secure modda `403`)
 - [ ] Yeni birim testi: `AuthenticatedUser` extractor oturumsuz → 401
 - [ ] Yeni birim testi: `RequireRole::Admin` normal kullanıcıyla → 403
 

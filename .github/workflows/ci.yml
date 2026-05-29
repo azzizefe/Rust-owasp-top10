@@ -52,14 +52,14 @@ jobs:
       - name: Linter (Clippy)
         env:
           SQLX_OFFLINE: true
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Run Integration & Unit Tests
         env:
           DATABASE_URL: postgres://app:CHANGEME@localhost:5432/owasp_lab
-        run: cargo test
+        run: cargo test --workspace
 
       - name: Production Release Build
         env:
           SQLX_OFFLINE: true
-        run: cargo build --release
+        run: cargo build --release --workspace

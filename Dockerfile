@@ -10,9 +10,9 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -u 10001 appuser
-COPY --from=builder /app/target/release/rust-owasp-top10 /usr/local/bin/app
+COPY --from=builder /app/target/release/owasp-web /usr/local/bin/app
 COPY --from=builder /app/migrations /migrations
-COPY --from=builder /app/templates /templates
+COPY --from=builder /app/crates/web/templates /templates
 USER appuser
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/app"]
