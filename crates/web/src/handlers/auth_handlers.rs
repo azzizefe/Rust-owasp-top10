@@ -78,10 +78,16 @@ pub async fn login(
                     format!("user_session={}; Path=/; HttpOnly; SameSite=Lax", b64)
                 }
                 AppMode::Secure => {
-                    // SECURE MOD: Güvenli, kriptografik rastgele DB session token'ı (OWASP A02:2026)
+                    // SECURE MOD: Çerez şifreleme ve imzalama (AEAD Tamper-Proof Cookie)
+                    let secret_bytes = state.session_secret.as_bytes();
+                    let (sign_key, enc_key) = owasp_core::crypto::derive_keys(secret_bytes);
+                    
+                    let encrypted = owasp_core::crypto::encrypt_cookie(&enc_key, &session.token);
+                    let signed_encrypted = owasp_core::crypto::sign_cookie(&sign_key, &encrypted);
+
                     format!(
                         "session_token={}; Path=/; HttpOnly; Secure; SameSite=Strict",
-                        session.token
+                        signed_encrypted
                     )
                 }
             };

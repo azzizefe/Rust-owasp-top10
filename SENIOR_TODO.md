@@ -115,36 +115,36 @@
 > **Neden:** Düz metin session token → şifreli/imzalı (Authenticated Encryption) çerez + HKDF anahtar türetme.
 
 ### 4.1 — HKDF Anahtar Türetme
-- [ ] `Cargo.toml`'a `hkdf = "0.12"` ve `sha2 = "0.10"` ekle
-- [ ] `SESSION_SECRET` envvar'ından HKDF-SHA256 ile iki ayrı anahtar türet: `signing_key` + `encryption_key`
-- [ ] Anahtar türetme fonksiyonunu `crates/core/src/crypto.rs` modülüne yaz
-- [ ] Birim testi: aynı secret → aynı türetilmiş anahtarlar (deterministic)
+- [x] `Cargo.toml`'a `hkdf = "0.12"` ve `sha2 = "0.10"` ekle
+- [x] `SESSION_SECRET` envvar'ından HKDF-SHA256 ile iki ayrı anahtar türet: `signing_key` + `encryption_key`
+- [x] Anahtar türetme fonksiyonunu `crates/core/src/crypto.rs` modülüne yaz
+- [x] Birim testi: aynı secret → aynı türetilmiş anahtarlar (deterministic)
 
 ### 4.2 — AES-GCM Encrypted Cookie
-- [ ] `Cargo.toml`'a `aes-gcm = "0.10"` ekle
-- [ ] `encrypt_cookie(key, plaintext) -> base64_ciphertext` fonksiyonu yaz
-- [ ] `decrypt_cookie(key, base64_ciphertext) -> Result<plaintext>` fonksiyonu yaz
-- [ ] Her şifrelemede benzersiz 96-bit nonce üret (`OsRng`)
-- [ ] Nonce'u ciphertext'in önüne ekle: `nonce || ciphertext || tag`
+- [x] `Cargo.toml`'a `aes-gcm = "0.10"` ekle
+- [x] `encrypt_cookie(key, plaintext) -> base64_ciphertext` fonksiyonu yaz
+- [x] `decrypt_cookie(key, base64_ciphertext) -> Result<plaintext>` fonksiyonu yaz
+- [x] Her şifrelemede benzersiz 96-bit nonce üret (`OsRng`)
+- [x] Nonce'u ciphertext'in önüne ekle: `nonce || ciphertext || tag`
 
 ### 4.3 — HMAC Cookie İmzası (Tamper-Proof)
-- [ ] `Cargo.toml`'a `hmac = "0.12"` ekle
-- [ ] `sign_cookie(key, value) -> value.signature` fonksiyonu yaz
-- [ ] `verify_cookie(key, value, signature) -> bool` fonksiyonu yaz
-- [ ] Geçersiz imza → oturumu sil + 401
+- [x] `Cargo.toml`'a `hmac = "0.12"` ekle
+- [x] `sign_cookie(key, value) -> value.signature` fonksiyonu yaz
+- [x] `verify_cookie(key, value, signature) -> bool` fonksiyonu yaz
+- [x] Geçersiz imza → oturumu sil + 401
 
 ### 4.4 — Entegrasyon
-- [ ] `auth_handlers::login` → secure modda `encrypt_cookie` + `sign_cookie` kullan
-- [ ] `resolve_current_user` → secure modda `verify_cookie` + `decrypt_cookie` kullan
-- [ ] Zafiyetli mod etkilenMEZ (eski Base64 davranış korunur, karşılaştırma için)
-- [ ] Mevcut session token DB mekanizması korunur (çerez sadece transport katmanı)
+- [x] `auth_handlers::login` → secure modda `encrypt_cookie` + `sign_cookie` kullan
+- [x] `resolve_current_user` → secure modda `verify_cookie` + `decrypt_cookie` kullan
+- [x] Zafiyetli mod etkilenMEZ (eski Base64 davranış korunur, karşılaştırma için)
+- [x] Mevcut session token DB mekanizması korunur (çerez sadece transport katmanı)
 
 ### 4.5 — Doğrulama
-- [ ] Birim testi: encrypt → decrypt round-trip
-- [ ] Birim testi: tampered cookie → verify başarısız
-- [ ] E2E: secure modda login → cookie şifreli (base64 decode edilince anlamsız)
-- [ ] E2E: cookie'yi manuel değiştirince 401 dönüyor
-- [ ] Tüm mevcut 10 E2E test hâlâ yeşil
+- [x] Birim testi: encrypt → decrypt round-trip
+- [x] Birim testi: tampered cookie → verify başarısız
+- [x] E2E: secure modda login → cookie şifreli (base64 decode edilince anlamsız)
+- [x] E2E: cookie'yi manuel değiştirince 401 dönüyor
+- [x] Tüm mevcut 10 E2E test hâlâ yeşil
 
 ---
 

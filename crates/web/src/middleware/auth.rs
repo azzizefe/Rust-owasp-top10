@@ -34,11 +34,24 @@ pub async fn authenticate(
             }
         }
         AppMode::Secure => {
-            if let Some(token) = get_cookie(request.headers(), "session_token") {
-                if let Ok(Some((_session, user))) =
-                    owasp_core::session::get_session(&state.pool, &token).await
-                {
-                    Some(user)
+            if let Some(signed_encrypted) = get_cookie(request.headers(), "session_token") {
+                let secret_bytes = state.session_secret.as_bytes();
+                let (sign_key, enc_key) = owasp_core::crypto::derive_keys(secret_bytes);
+
+                // HMAC imzasını doğrula
+                if let Ok(encrypted) = owasp_core::crypto::verify_cookie(&sign_key, &signed_encrypted) {
+                    // AES-GCM şifresini çözerek ham session token'ı elde et
+                    if let Ok(token) = owasp_core::crypto::decrypt_cookie(&enc_key, &encrypted) {
+                        if let Ok(Some((_session, user))) =
+                            owasp_core::session::get_session(&state.pool, &token).await
+                        {
+                            Some(user)
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
