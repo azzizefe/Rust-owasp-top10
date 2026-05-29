@@ -25,7 +25,10 @@ pub fn create_router(state: AppState) -> Router {
     // Temel router oluşturuluyor
     let mut router = Router::new()
         // Ana sayfa yönlendirmesi
-        .route("/", get(|| async { axum::response::Redirect::to("/login") }))
+        .route(
+            "/",
+            get(|| async { axum::response::Redirect::to("/login") }),
+        )
         // Sağlık kontrolü
         .route("/health", get(health_check))
         // Kimlik doğrulama rotaları
@@ -72,7 +75,7 @@ pub fn create_router(state: AppState) -> Router {
             .layer(SetResponseHeaderLayer::overriding(
                 header::CONTENT_SECURITY_POLICY,
                 header::HeaderValue::from_static(
-                    "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'",
+                    "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; object-src 'none'; base-uri 'self'",
                 ),
             ))
             .layer(SetResponseHeaderLayer::overriding(

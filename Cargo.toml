@@ -2,6 +2,9 @@
 name = "rust-owasp-top10"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "İstinye Üniversitesi Web Güvenliği Final Projesi - Rust OWASP Top 10 Security Lab"
+authors = ["Efe"]
 
 [dependencies]
 axum = "0.7"
