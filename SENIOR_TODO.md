@@ -153,41 +153,41 @@
 > **Neden:** Bağımsız sorgular → atomik transaction'lar + bağlantı kopmasına dayanıklılık.
 
 ### 5.1 — Transaction Wrapper
-- [ ] `crates/core/src/db.rs`'e generic `with_tx` yardımcı fonksiyon ekle:
+- [x] `crates/core/src/db.rs`'e generic `with_tx` yardımcı fonksiyon ekle:
   ```rust
   pub async fn with_tx<F, T>(pool: &PgPool, f: F) -> Result<T, ApiError>
   where F: FnOnce(&mut Transaction<'_, Postgres>) -> BoxFuture<'_, Result<T, ApiError>>
   ```
-- [ ] `SecureAuth::register` → transaction içine al (user insert + otomatik session oluşturma)
-- [ ] `SecureAuth::login` → transaction içine al (session insert + eski session temizleme)
-- [ ] Hata durumunda otomatik `ROLLBACK` (sqlx Transaction drop semantiği)
+- [x] `SecureAuth::register` → transaction içine al (user insert + otomatik session oluşturma)
+- [x] `SecureAuth::login` → transaction içine al (session insert + eski session temizleme)
+- [x] Hata durumunda otomatik `ROLLBACK` (sqlx Transaction drop semantiği)
 
 ### 5.2 — Connection Pool Hardening
-- [ ] `PgPoolOptions` ayarlarını production-grade yap:
-  - [ ] `max_connections(10)` (Docker ortamı için makul)
-  - [ ] `acquire_timeout(Duration::from_secs(5))`
-  - [ ] `idle_timeout(Duration::from_secs(600))`
-  - [ ] `max_lifetime(Duration::from_secs(1800))`
-- [ ] `min_connections(2)` ile warm pool (soğuk başlangıç engeli)
-- [ ] Bağlantı havuzu metriklerini log'a yaz (başlangıçta `pool.size()`, `pool.num_idle()`)
+- [x] `PgPoolOptions` ayarlarını production-grade yap:
+  - [x] `max_connections(10)` (Docker ortamı için makul)
+  - [x] `acquire_timeout(Duration::from_secs(5))`
+  - [x] `idle_timeout(Duration::from_secs(600))`
+  - [x] `max_lifetime(Duration::from_secs(1800))`
+- [x] `min_connections(2)` ile warm pool (soğuk başlangıç engeli)
+- [x] Bağlantı havuzu metriklerini log'a yaz (başlangıçta `pool.size()`, `pool.num_idle()`)
 
 ### 5.3 — Graceful Shutdown
-- [ ] `tokio::signal::ctrl_c()` ile graceful shutdown entegre et
-- [ ] Shutdown sırasında aktif bağlantıları tamamla, yeni istek kabul etme
-- [ ] `pool.close().await` ile veritabanı bağlantılarını temiz kapat
-- [ ] Shutdown log mesajı: `"Server shutting down gracefully..."`
+- [x] `tokio::signal::ctrl_c()` ile graceful shutdown entegre et
+- [x] Shutdown sırasında aktif bağlantıları tamamla, yeni istek kabul etme
+- [x] `pool.close().await` ile veritabanı bağlantılarını temiz kapat
+- [x] Shutdown log mesajı: `"Server shutting down gracefully..."`
 
 ### 5.4 — Health Check Derinleştirme
-- [ ] `/health` endpoint'ini zenginleştir: DB bağlantısı kontrol et (`SELECT 1`)
-- [ ] Response: `{"status":"healthy","db":"connected","uptime_secs":...}`
-- [ ] DB bağlantısı yoksa `503 Service Unavailable` dön
-- [ ] Docker `healthcheck` komutunu bu endpoint'e yönlendir
+- [x] `/health` endpoint'ini zenginleştir: DB bağlantısı kontrol et (`SELECT 1`)
+- [x] Response: `{"status":"healthy","db":"connected","uptime_secs":...}`
+- [x] DB bağlantısı yoksa `503 Service Unavailable` dön
+- [x] Docker `healthcheck` komutunu bu endpoint'e yönlendir
 
 ### 5.5 — Doğrulama
-- [ ] Register sırasında DB hatası → ROLLBACK (kısmi veri YOK)
-- [ ] `/health` DB kapalıyken 503 dönüyor
-- [ ] Graceful shutdown sırasında aktif istek tamamlanıyor
-- [ ] Tüm 10 E2E test hâlâ yeşil
+- [x] Register sırasında DB hatası → ROLLBACK (kısmi veri YOK)
+- [x] `/health` DB kapalıyken 503 dönüyor
+- [x] Graceful shutdown sırasında aktif istek tamamlanıyor
+- [x] Tüm 10 E2E test hâlâ yeşil
 
 ---
 

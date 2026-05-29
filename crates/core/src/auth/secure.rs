@@ -1,5 +1,3 @@
-// crates/core/src/auth/secure.rs
-
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, PasswordVerifier, SaltString},
     Argon2, PasswordHash,
@@ -7,6 +5,9 @@ use argon2::{
 use async_trait::async_trait;
 use sqlx::PgPool;
 use tracing::warn;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
+use chrono::{Duration, Utc};
 
 use crate::auth::AuthBackend;
 use crate::error::ApiError;
@@ -41,17 +42,23 @@ impl AuthBackend for SecureAuth {
         .await
         .map_err(|e| ApiError::Internal(e.to_string()))??;
 
-        // Parametreli sorgu ($1, $2, $3) girdiyi SQL yapısından ayırır (SQLi Engeli)
-        let row = sqlx::query!(
-            "INSERT INTO users (username, password_hash, email, role) VALUES ($1, $2, $3, 'user') RETURNING id",
-            form.username,
-            password_hash,
-            form.email
-        )
-        .fetch_one(&self.pool)
-        .await?;
+        // 🛡️ Transaction ile zırhlandırılmış yazma işlemi (Phase 5.1)
+        crate::db::with_tx(&self.pool, |tx| {
+            Box::pin(async move {
+                let row = sqlx::query!(
+                    "INSERT INTO users (username, password_hash, email, role) VALUES ($1, $2, $3, 'user') RETURNING id",
+                    form.username,
+                    password_hash,
+                    form.email
+                )
+                .fetch_one(&mut **tx)
+                .await
+                .map_err(ApiError::from)?;
 
-        Ok(row.id)
+                Ok(row.id)
+            })
+        })
+        .await
     }
 
     // ✅ SECURE: Parametreli SQL sorgusu + Zamanlama Analizi (Timing Attack) Koruması (OWASP A07:2026)
@@ -108,9 +115,39 @@ impl AuthBackend for SecureAuth {
             return Err(ApiError::Unauthorized);
         }
 
-        // Güvenli, kriptografik rastgele oturum token'ı oluştur (OWASP A02:2026)
-        let session = crate::session::create_session(&self.pool, user.id, 2).await?;
-        Ok(session)
+        // 🛡️ Oturum açma sırasında eski oturumları temizle ve yenisini kaydet (Atomik Transaction - Phase 5.1)
+        crate::db::with_tx(&self.pool, |tx| {
+            Box::pin(async move {
+                // 1. Varsa eski oturumları temizle
+                sqlx::query("DELETE FROM sessions WHERE user_id = $1")
+                    .bind(user.id)
+                    .execute(&mut **tx)
+                    .await
+                    .map_err(ApiError::from)?;
+
+                // 2. 32 karakterli güçlü token üretimi (OWASP A02:2026 Koruması)
+                let token: String = thread_rng()
+                    .sample_iter(&Alphanumeric)
+                    .take(32)
+                    .map(char::from)
+                    .collect();
+                let expires_at = Utc::now() + Duration::hours(2);
+
+                // 3. Yeni oturumu kaydet
+                let session = sqlx::query_as::<_, Session>(
+                    "INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3) RETURNING *",
+                )
+                .bind(&token)
+                .bind(user.id)
+                .bind(expires_at)
+                .fetch_one(&mut **tx)
+                .await
+                .map_err(ApiError::from)?;
+
+                Ok(session)
+            })
+        })
+        .await
     }
 
     // ✅ SECURE: Parametreli profil araması (SQLi engeli)

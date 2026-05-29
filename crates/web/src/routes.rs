@@ -2,6 +2,7 @@
 
 use axum::{
     routing::{get, post},
+    response::IntoResponse,
     Router,
 };
 use sqlx::PgPool;
@@ -17,6 +18,7 @@ pub struct AppState {
     pub pool: PgPool,
     pub mode: AppMode,
     pub session_secret: String,
+    pub start_time: chrono::DateTime<chrono::Utc>,
 }
 
 use crate::middleware::auth::authenticate;
@@ -120,6 +122,39 @@ pub fn create_router(state: AppState) -> Router {
     router
 }
 
-async fn health_check() -> &'static str {
-    "OK"
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::Json;
+use serde_json::json;
+
+async fn health_check(State(state): State<AppState>) -> impl axum::response::IntoResponse {
+    let db_check = sqlx::query("SELECT 1")
+        .execute(&state.pool)
+        .await;
+
+    let uptime = (chrono::Utc::now() - state.start_time).num_seconds();
+
+    match db_check {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({
+                "status": "healthy",
+                "db": "connected",
+                "uptime_secs": uptime
+            })),
+        )
+            .into_response(),
+        Err(e) => {
+            tracing::error!("Health Check DB Hatası: {:?}", e);
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(json!({
+                    "status": "unhealthy",
+                    "db": "disconnected",
+                    "uptime_secs": uptime
+                })),
+            )
+                .into_response()
+        }
+    }
 }

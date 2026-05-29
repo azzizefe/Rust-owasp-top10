@@ -51,6 +51,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
+    let pool_clone = pool.clone();
+
     if let Err(e) = db::run_migrations(&pool).await {
         error!("Migration'lar uygulanamadı: {:?}", e);
         std::process::exit(1);
@@ -76,6 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pool,
         mode: cfg.mode,
         session_secret: cfg.session_secret,
+        start_time: chrono::Utc::now(),
     };
 
     let app = routes::create_router(state);
@@ -83,11 +86,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind(&cfg.bind_addr).await?;
     info!("Sunucu başarıyla dinliyor: http://{}", cfg.bind_addr);
 
+    // Graceful Shutdown (Phase 5.3) ile sunucuyu ayağa kaldır
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
+    .with_graceful_shutdown(shutdown_signal(pool_clone))
     .await?;
 
     Ok(())
+}
+
+async fn shutdown_signal(pool: sqlx::PgPool) {
+    let ctrl_c = async {
+        let _ = tokio::signal::ctrl_c().await;
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        if let Ok(mut sig) = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+            sig.recv().await;
+        }
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    warn!("Server shutting down gracefully...");
+    
+    // Aktif bağlantıların bitmesini bekleyerek bağlantı havuzunu kapatır
+    pool.close().await;
+    info!("Veritabanı bağlantı havuzu başarıyla kapatıldı.");
 }

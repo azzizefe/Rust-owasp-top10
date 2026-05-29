@@ -37,6 +37,7 @@ pub async fn spawn_app(mode: AppMode) -> TestApp {
         pool: db_pool.clone(),
         mode,
         session_secret: "test_session_secret_32_bytes_long_12345".to_string(),
+        start_time: chrono::Utc::now(),
     };
 
     // 4. Rastgele bir port dinle (Tokio native async)
