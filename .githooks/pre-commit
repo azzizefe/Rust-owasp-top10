@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# 🛡️ Rust OWASP Top 10 Security Lab - Git Pre-Commit Hook
+# Ensures that no broken, unformatted, or insecure code is committed.
+
+echo "============================================="
+echo "🔍 Running Pre-Commit Security & Quality Checks..."
+echo "============================================="
+
+# 1. Code Formatting Check
+echo "🔹 Step 1: Checking code formatting (cargo fmt)..."
+cargo fmt --all --check
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Code formatting check failed!"
+    echo "💡 Action: Run 'cargo fmt --all' to format your code before committing."
+    echo "============================================="
+    exit 1
+fi
+echo "✅ Code formatting is correct."
+
+# 2. Clippy Security & Quality Lints
+echo "🔹 Step 2: Running security lints (cargo clippy)..."
+cargo clippy --all-targets -- -D warnings
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Security or code quality lints failed!"
+    echo "💡 Action: Fix all clippy warnings before committing."
+    echo "============================================="
+    exit 1
+fi
+echo "✅ All lints passed successfully."
+
+# 3. Integration & Unit Tests
+echo "🔹 Step 3: Running integration tests (cargo test)..."
+cargo test
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Integration tests failed!"
+    echo "💡 Action: Ensure all test cases are passing before committing."
+    echo "============================================="
+    exit 1
+fi
+echo "✅ All integration tests passed."
+
+echo "============================================="
+echo "🎉 SUCCESS: All checks passed! Proceeding with commit..."
+echo "============================================="
+exit 0

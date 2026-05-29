@@ -100,6 +100,18 @@ Once the compilation completes, navigate to `http://localhost:8080` in your brow
 cargo test
 ```
 
+### 4. Enable Automated Git Pre-Commit Hooks (Highly Recommended)
+To prevent committing broken, poorly formatted, or insecure code, activate the automated pre-commit hook (which runs `cargo fmt`, `cargo clippy`, and `cargo test` automatically before any commit):
+* **Linux / macOS:**
+  ```bash
+  chmod +x scripts/setup-hooks.sh
+  ./scripts/setup-hooks.sh
+  ```
+* **Windows (Command Prompt):**
+  ```cmd
+  scripts\setup-hooks.bat
+  ```
+
 ---
 
 ## 🎬 Pre-Packaged Exploitation Scripts
