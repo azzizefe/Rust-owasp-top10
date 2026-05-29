@@ -50,6 +50,8 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Linter (Clippy)
+        env:
+          SQLX_OFFLINE: true
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Run Integration & Unit Tests
@@ -58,4 +60,6 @@ jobs:
         run: cargo test
 
       - name: Production Release Build
+        env:
+          SQLX_OFFLINE: true
         run: cargo build --release

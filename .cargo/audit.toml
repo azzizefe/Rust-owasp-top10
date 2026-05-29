@@ -1,0 +1,14 @@
+# 🛡️ cargo-audit Configuration File
+# Explicitly ignores advisories that cannot be resolved without introducing
+# breaking changes or migrating to new major versions of dependencies (e.g. SQLx 0.8).
+
+[advisories]
+ignore = [
+    "RUSTSEC-2023-0071", # rsa timing sidechannel (no fixed upgrade available for sqlx 0.7)
+    "RUSTSEC-2026-0098", # rustls-webpki URI name constraints (requires sqlx major upgrade)
+    "RUSTSEC-2026-0099", # rustls-webpki wildcard name constraints (requires sqlx major upgrade)
+    "RUSTSEC-2026-0104", # rustls-webpki CRL parser panic (requires sqlx major upgrade)
+    "RUSTSEC-2024-0363", # sqlx Binary Protocol Misinterpretation (fixed in SQLx 0.8)
+    "RUSTSEC-2024-0436", # paste unmaintained (transitive dependency of sqlx 0.7)
+    "RUSTSEC-2025-0134"  # rustls-pemfile unmaintained (transitive dependency of sqlx 0.7)
+]
