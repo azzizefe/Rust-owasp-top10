@@ -83,30 +83,30 @@
 > **Neden:** Düz metin loglar → SIEM-uyumlu yapılandırılmış JSON + her isteği izlenebilir kılan RequestId.
 
 ### 3.1 — Structured JSON Formatter
-- [ ] `tracing-subscriber` features'a `"json"` ekle
-- [ ] `Cargo.toml`'a `tracing-serde` ekle (opsiyonel)
-- [ ] `main.rs`'deki tracing init'i güncelle: ortam değişkeniyle (`LOG_FORMAT=json|pretty`) seçilebilir
-- [ ] JSON formatında log çıktısı: `{"timestamp":"...","level":"WARN","target":"...","message":"..."}`
-- [ ] Development'ta `pretty` (renkli), production/Docker'da `json` varsayılan
+- [x] `tracing-subscriber` features'a `"json"` ekle
+- [x] `Cargo.toml`'a `tracing-serde` ekle (opsiyonel)
+- [x] `main.rs`'deki tracing init'i güncelle: ortam değişkeniyle (`LOG_FORMAT=json|pretty`) seçilebilir
+- [x] JSON formatında log çıktısı: `{"timestamp":"...","level":"WARN","target":"...","message":"..."}`
+- [x] Development'ta `pretty` (renkli), production/Docker'da `json` varsayılan
 
 ### 3.2 — Request Correlation ID Middleware
-- [ ] `tower-http`'nin `RequestIdLayer` veya özel UUID middleware yaz
-- [ ] Her gelen HTTP isteğine `X-Request-Id` header'ı ata (yoksa üret)
-- [ ] Response'a da `X-Request-Id` header'ı ekle (client tarafı korelasyon)
-- [ ] Tüm handler loglarında `request_id` span'ı otomatik olarak görünsün
-- [ ] `tracing::info_span!("request", request_id = %id)` ile span oluştur
+- [x] `tower-http`'nin `RequestIdLayer` veya özel UUID middleware yaz
+- [x] Her gelen HTTP isteğine `X-Request-Id` header'ı ata (yoksa üret)
+- [x] Response'a da `X-Request-Id` header'ı ekle (client tarafı korelasyon)
+- [x] Tüm handler loglarında `request_id` span'ı otomatik olarak görünsün
+- [x] `tracing::info_span!("request", request_id = %id)` ile span oluştur
 
 ### 3.3 — Security Audit Log Yapısı
-- [ ] Başarısız login denemelerini yapılandırılmış logla: `{"event":"login_failed","ip":"...","username":"..."}`
-- [ ] IDOR ihlal girişimlerini logla: `{"event":"idor_blocked","attacker_id":...,"target_id":...}`
-- [ ] Rate limit tetiklemelerini logla: `{"event":"rate_limited","ip":"..."}`
-- [ ] Tüm audit logları `tracing::warn!` seviyesinde, `target = "security_audit"` ile
+- [x] Başarısız login denemelerini yapılandırılmış logla: `{"event":"login_failed","ip":"...","username":"..."}`
+- [x] IDOR ihlal girişimlerini logla: `{"event":"idor_blocked","attacker_id":...,"target_id":...}`
+- [x] Rate limit tetiklemelerini logla: `{"event":"rate_limited","ip":"..."}`
+- [x] Tüm audit logları `tracing::warn!` seviyesinde, `target = "security_audit"` ile
 
 ### 3.4 — Doğrulama
-- [ ] Docker loglarında JSON formatı doğrula (`docker compose logs | jq .`)
-- [ ] Her response'ta `X-Request-Id` header'ı mevcut (test)
-- [ ] Brute-force testi esnasında audit loglarında `login_failed` event'leri görünüyor
-- [ ] `.env.example`'a `LOG_FORMAT=json` ekle
+- [x] Docker loglarında JSON formatı doğrula (`docker compose logs | jq .`)
+- [x] Her response'ta `X-Request-Id` header'ı mevcut (test)
+- [x] Brute-force testi esnasında audit loglarında `login_failed` event'leri görünüyor
+- [x] `.env.example`'a `LOG_FORMAT=json` ekle
 
 ---
 

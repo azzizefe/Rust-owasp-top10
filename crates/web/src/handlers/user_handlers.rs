@@ -26,7 +26,15 @@ pub async fn show_profile(
             Some(user) => {
                 // Sadece kendisi veya 'admin' rolündeki biri başkasının profilini görebilir
                 if user.id != profile_id && user.role != "admin" {
-                    warn!("🔒 GÜVENLİK İHLALİ ENGELENDİ: Kullanıcı {} başkasının ({}) profiline erişmeye çalıştı!", user.id, profile_id);
+                    warn!(
+                        target: "security_audit",
+                        event = "idor_blocked",
+                        attacker_id = %user.id,
+                        target_id = %profile_id,
+                        "🔒 GÜVENLİK İHLALİ ENGELLENDİ: Kullanıcı {} başkasının ({}) profiline erişmeye çalıştı!",
+                        user.id,
+                        profile_id
+                    );
                     return Err(ApiError::Forbidden.into());
                 }
             }

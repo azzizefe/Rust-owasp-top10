@@ -51,11 +51,13 @@ pub async fn show_login() -> impl IntoResponse {
     LoginTemplate { error: None }
 }
 
+use tracing::warn;
+
 pub async fn login(
     State(state): State<AppState>,
     Form(form): Form<LoginForm>,
 ) -> impl IntoResponse {
-    match state.auth.login(form).await {
+    match state.auth.login(form.clone()).await {
         Ok(session) => {
             // Giriş başarılı, çerez (cookie) set ediliyor
             let cookie_str = match state.mode {
@@ -110,6 +112,15 @@ pub async fn login(
             };
 
             if state.mode == AppMode::Secure {
+                // 🛡️ SECURITY AUDIT LOG: Başarısız login denemesi (OWASP A09:2026)
+                warn!(
+                    target: "security_audit",
+                    event = "login_failed",
+                    username = %form.username,
+                    error = ?e,
+                    "🔒 GÜVENLİK AUDİT: Başarısız giriş denemesi!"
+                );
+
                 (
                     StatusCode::UNAUTHORIZED,
                     LoginTemplate {

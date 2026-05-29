@@ -30,6 +30,10 @@ pub async fn require_role(
             RequireRole::Admin => {
                 if user.role != "admin" {
                     warn!(
+                        target: "security_audit",
+                        event = "unauthorized_role_access",
+                        attacker_id = %user.id,
+                        required_role = "admin",
                         "🔒 GÜVENLİK İHLALİ ENGELLENDİ: Yetkisiz Admin paneli erişimi! Kullanıcı ID: {}",
                         user.id
                     );

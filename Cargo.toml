@@ -18,7 +18,7 @@ base64 = "0.22"
 # Web Framework
 axum = "0.7"
 tower = "0.4"
-tower-http = { version = "0.5", features = ["limit", "trace", "set-header"] }
+tower-http = { version = "0.5", features = ["limit", "trace", "set-header", "request-id", "util"] }
 tower_governor = "0.3"
 reqwest = { version = "0.12", features = ["json", "cookies"] }
 url = "2.5"
@@ -36,7 +36,7 @@ thiserror = "1"
 
 # Logging
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "registry"] }
 
 # Utilities
 chrono = { version = "0.4", features = ["serde"] }

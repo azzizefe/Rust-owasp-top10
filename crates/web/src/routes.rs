@@ -71,6 +71,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/fetch", get(post_handlers::fetch_url))
         // Tüm isteklerde önce oturum çözme katmanı (Authenticate) çalışır
         .layer(from_fn_with_state(state.clone(), authenticate))
+        // En dışta isteklerin Correlation ID ile etiketlenmesi sağlanır
+        .layer(axum::middleware::from_fn(crate::middleware::request_id::correlation_id))
         .with_state(state);
 
     // SECURE MOD: Güvenlik başlıkları, rate limiting ve body limit korumaları (OWASP A05 & A06:2026)

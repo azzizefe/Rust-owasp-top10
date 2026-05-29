@@ -11,13 +11,25 @@ use owasp_web::routes;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Tracing loglamayı başlat
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "owasp_web=info,owasp_core=info,tower_http=info".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    let log_format = std::env::var("LOG_FORMAT").unwrap_or_else(|_| "pretty".to_string());
+    let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| "owasp_web=info,owasp_core=info,tower_http=info".into());
+
+    let registry = tracing_subscriber::registry().with(env_filter);
+
+    if log_format == "json" {
+        let fmt_layer = tracing_subscriber::fmt::layer()
+            .json()
+            .flatten_event(true)
+            .with_current_span(true)
+            .with_span_list(true);
+        registry.with(fmt_layer).init();
+    } else {
+        let fmt_layer = tracing_subscriber::fmt::layer()
+            .pretty()
+            .with_thread_ids(true);
+        registry.with(fmt_layer).init();
+    }
 
     info!("OWASP Lab Sunucusu ilklendiriliyor...");
 
