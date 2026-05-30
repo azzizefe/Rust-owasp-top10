@@ -35,29 +35,52 @@ pub async fn authenticate(
         }
         AppMode::Secure => {
             if let Some(signed_encrypted) = get_cookie(request.headers(), "session_token") {
+                tracing::info!("🔑 AUTH: session_token çerezi bulundu!");
                 let secret_bytes = state.session_secret.as_bytes();
                 let (sign_key, enc_key) = owasp_core::crypto::derive_keys(secret_bytes);
 
                 // HMAC imzasını doğrula
-                if let Ok(encrypted) =
-                    owasp_core::crypto::verify_cookie(&sign_key, &signed_encrypted)
-                {
-                    // AES-GCM şifresini çözerek ham session token'ı elde et
-                    if let Ok(token) = owasp_core::crypto::decrypt_cookie(&enc_key, &encrypted) {
-                        if let Ok(Some((_session, user))) =
-                            owasp_core::session::get_session(&state.pool, &token).await
-                        {
-                            Some(user)
-                        } else {
-                            None
+                match owasp_core::crypto::verify_cookie(&sign_key, &signed_encrypted) {
+                    Ok(encrypted) => {
+                        tracing::info!("🔑 AUTH: HMAC imzası başarıyla doğrulandı!");
+                        // AES-GCM şifresini çözerek ham session token'ı elde et
+                        match owasp_core::crypto::decrypt_cookie(&enc_key, &encrypted) {
+                            Ok(token) => {
+                                tracing::info!(
+                                    "🔑 AUTH: AES-GCM şifresi başarıyla çözüldü! token={}",
+                                    token
+                                );
+                                match owasp_core::session::get_session(&state.pool, &token).await {
+                                    Ok(Some((_session, user))) => {
+                                        tracing::info!("🔑 AUTH: Oturum veritabanından başarıyla çekildi! user={}", user.username);
+                                        Some(user)
+                                    }
+                                    Ok(None) => {
+                                        tracing::warn!("🔑 AUTH: Oturum veritabanında bulunamadı!");
+                                        None
+                                    }
+                                    Err(e) => {
+                                        tracing::error!(
+                                            "🔑 AUTH: Oturum sorgusu DB hatası: {:?}",
+                                            e
+                                        );
+                                        None
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                tracing::error!("🔑 AUTH: AES-GCM şifre çözme hatası: {:?}", e);
+                                None
+                            }
                         }
-                    } else {
+                    }
+                    Err(e) => {
+                        tracing::error!("🔑 AUTH: HMAC imza doğrulama hatası: {:?}", e);
                         None
                     }
-                } else {
-                    None
                 }
             } else {
+                tracing::warn!("🔑 AUTH: session_token çerezi request header'larında bulunamadı!");
                 None
             }
         }

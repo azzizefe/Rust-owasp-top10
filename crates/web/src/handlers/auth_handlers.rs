@@ -20,9 +20,11 @@ pub async fn register(
     State(state): State<AppState>,
     Form(form): Form<RegisterForm>,
 ) -> impl IntoResponse {
+    tracing::debug!("📥 REGISTER IST EGI ALINDI: username={}", form.username);
     // SECURE MOD: Girdi doğrulama ve temizleme (OWASP A03:2026)
     if state.mode == AppMode::Secure {
         if let Err(err_msg) = form.validate() {
+            tracing::warn!("⚠️ GÜVENLİK: Register form validation failed: {}", err_msg);
             return RegisterTemplate {
                 error: Some(err_msg),
             }
@@ -33,6 +35,10 @@ pub async fn register(
     match state.auth.register(form).await {
         Ok(_) => Redirect::to("/login").into_response(),
         Err(e) => {
+            tracing::error!(
+                "❌ GÜVENLİK/KAYIT HATASI: Register failed with error: {:?}",
+                e
+            );
             // Vulnerable modda veritabanı hata detayları sızar (OWASP A10:2026)
             let err_msg = if state.mode == AppMode::Vulnerable {
                 format!("Kayıt hatası: {:?}", e)
@@ -57,6 +63,7 @@ pub async fn login(
     State(state): State<AppState>,
     Form(form): Form<LoginForm>,
 ) -> impl IntoResponse {
+    tracing::debug!("📥 LOGIN IST EGI ALINDI: username={}", form.username);
     match state.auth.login(form.clone()).await {
         Ok(session) => {
             // Giriş başarılı, çerez (cookie) set ediliyor
@@ -85,9 +92,10 @@ pub async fn login(
                     let encrypted = owasp_core::crypto::encrypt_cookie(&enc_key, &session.token);
                     let signed_encrypted = owasp_core::crypto::sign_cookie(&sign_key, &encrypted);
 
+                    let secure_attr = if state.cookie_secure { "; Secure" } else { "" };
                     format!(
-                        "session_token={}; Path=/; HttpOnly; Secure; SameSite=Strict",
-                        signed_encrypted
+                        "session_token={}; Path=/; HttpOnly{}; SameSite=Strict",
+                        signed_encrypted, secure_attr
                     )
                 }
             };
@@ -102,6 +110,7 @@ pub async fn login(
             (StatusCode::SEE_OTHER, headers, Redirect::to("/search")).into_response()
         }
         Err(e) => {
+            tracing::error!("❌ GÜVENLİK/LOGIN HATASI: Login failed with error: {:?}", e);
             // ⚠️ VULNERABLE — Farklı hata mesajları vererek kullanıcı hesaplarını ifşa eder (User Enumeration - OWASP A07:2026)
             let err_msg = match state.mode {
                 AppMode::Vulnerable => match e {

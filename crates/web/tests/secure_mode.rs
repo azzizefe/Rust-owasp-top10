@@ -34,7 +34,54 @@ async fn test_secure_sqli_blocked() {
 #[tokio::test]
 async fn test_secure_reflected_xss_escaped() {
     let app = common::spawn_app(AppMode::Secure).await;
-    let client = Client::new();
+    // Cookie store kullanan client
+    let client = Client::builder().cookie_store(true).build().unwrap();
+
+    let rand_user = format!("x_{}", chrono::Utc::now().timestamp_millis() % 100_000_000);
+    let rand_email = format!("{}@x.com", rand_user);
+    let register_form = [
+        ("username", rand_user.as_str()),
+        ("email", rand_email.as_str()),
+        ("password", "StrongPass123!"),
+    ];
+    let reg_resp = client
+        .post(format!("{}/register", app.address))
+        .form(&register_form)
+        .send()
+        .await
+        .unwrap();
+    assert!(
+        reg_resp.status().is_redirection() || reg_resp.status() == StatusCode::OK,
+        "Register response should be 200 or 303, got status={}",
+        reg_resp.status()
+    );
+
+    // Veritabanı commit ve asenkron havuz senkronizasyonu için küçük bir gecikme ekle
+    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+
+    let login_form = [
+        ("username", rand_user.as_str()),
+        ("password", "StrongPass123!"),
+    ];
+
+    let login_resp = client
+        .post(format!("{}/login", app.address))
+        .form(&login_form)
+        .send()
+        .await
+        .unwrap();
+
+    let login_status = login_resp.status();
+    let login_body = login_resp.text().await.unwrap();
+    if login_status == StatusCode::UNAUTHORIZED {
+        panic!("❌ GİRİŞ BAŞARISIZ! Dönen Yanıt:\n{}", login_body);
+    }
+
+    assert!(
+        login_status.is_redirection() || login_status == StatusCode::OK,
+        "Login response should be a redirect or 200, got status={}",
+        login_status
+    );
 
     // 🛡️ SECURE REFLECTED XSS PROTECTION:
     // Arama kutusuna gönderilen JavaScript kodu Askama tarafından otomatik escape edilir.
@@ -121,10 +168,35 @@ async fn test_secure_idor_blocked() {
 #[tokio::test]
 async fn test_secure_debug_endpoint_disabled() {
     let app = common::spawn_app(AppMode::Secure).await;
-    let client = Client::new();
+    let client = Client::builder().cookie_store(true).build().unwrap();
+
+    let rand_user = format!("d_{}", chrono::Utc::now().timestamp_millis() % 100_000_000);
+    let rand_email = format!("{}@d.com", rand_user);
+    let register_form = [
+        ("username", rand_user.as_str()),
+        ("email", rand_email.as_str()),
+        ("password", "StrongPass123!"),
+    ];
+    let _ = client
+        .post(format!("{}/register", app.address))
+        .form(&register_form)
+        .send()
+        .await
+        .unwrap();
+
+    let login_form = [
+        ("username", rand_user.as_str()),
+        ("password", "StrongPass123!"),
+    ];
+    let _ = client
+        .post(format!("{}/login", app.address))
+        .form(&login_form)
+        .send()
+        .await
+        .unwrap();
 
     // 🛡️ SECURE MISCONFIGURATION MITIGATION:
-    // Debug endpoint'i güvenli modda erişime tamamen kapatılır.
+    // Debug endpoint'i güvenli modda erişime tamamen kapatılır veya admin dışındaki tüm rollere yasaklanır.
     let resp = client
         .get(format!("{}/api/debug", app.address))
         .send()
@@ -196,10 +268,13 @@ async fn test_secure_require_role_admin_forbidden() {
     // Cookie store destekleyen client
     let client = Client::builder().cookie_store(true).build().unwrap();
 
+    let rand_user = format!("r_{}", chrono::Utc::now().timestamp_millis() % 100_000_000);
+    let rand_email = format!("{}@r.com", rand_user);
+
     // 1. Yeni bir normal kullanıcı kaydet
     let register_form = [
-        ("username", "test_user_rbac"),
-        ("email", "rbac@test.com"),
+        ("username", rand_user.as_str()),
+        ("email", rand_email.as_str()),
         ("password", "StrongPass123!"),
     ];
     let _ = client
@@ -211,7 +286,7 @@ async fn test_secure_require_role_admin_forbidden() {
 
     // 2. Bu normal kullanıcı ile login ol (session cookie'si client'a yüklenecek)
     let login_form = [
-        ("username", "test_user_rbac"),
+        ("username", rand_user.as_str()),
         ("password", "StrongPass123!"),
     ];
     let _ = client

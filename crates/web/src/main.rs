@@ -5,7 +5,7 @@
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use owasp_core::{auth, config, db};
+use owasp_core::{auth, config, db, secrets};
 use owasp_web::routes;
 
 #[tokio::main]
@@ -33,8 +33,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("OWASP Lab Sunucusu ilklendiriliyor...");
 
-    // 2. Konfigürasyonu yükle
-    let cfg = match config::Config::from_env() {
+    // 2. Secrets provider'ı oluştur ve konfigürasyonu yükle
+    let provider = secrets::build_provider_async().await;
+    info!(
+        secrets_provider = provider.provider_name(),
+        "Secrets provider başarıyla yüklendi"
+    );
+
+    let cfg = match config::Config::load(&*provider).await {
         Ok(c) => c,
         Err(e) => {
             error!("Konfigürasyon hatası: {}", e);
@@ -43,7 +49,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // 3. Veritabanı bağlantısı kur ve şemaları migrate et
-    let pool = match db::connect(&cfg.database_url).await {
+    let require_ssl = cfg.mode == config::AppMode::Secure;
+    let pool = match db::connect(&cfg.database_url, require_ssl).await {
         Ok(p) => p,
         Err(e) => {
             error!("Veritabanına bağlanılamadı: {:?}", e);
@@ -78,6 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pool,
         mode: cfg.mode,
         session_secret: cfg.session_secret,
+        cookie_secure: cfg.cookie_secure,
         start_time: chrono::Utc::now(),
     };
 

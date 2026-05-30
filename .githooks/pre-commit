@@ -20,7 +20,7 @@ echo "✅ Code formatting is correct."
 
 # 2. Clippy Security & Quality Lints
 echo "🔹 Step 2: Running security lints (cargo clippy)..."
-cargo clippy --all-targets -- -D warnings
+SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
 if [ $? -ne 0 ]; then
     echo "❌ ERROR: Security or code quality lints failed!"
     echo "💡 Action: Fix all clippy warnings before committing."
@@ -31,7 +31,7 @@ echo "✅ All lints passed successfully."
 
 # 3. Integration & Unit Tests
 echo "🔹 Step 3: Running integration tests (cargo test)..."
-cargo test
+SQLX_OFFLINE=true cargo test
 if [ $? -ne 0 ]; then
     echo "❌ ERROR: Integration tests failed!"
     echo "💡 Action: Ensure all test cases are passing before committing."
@@ -39,6 +39,33 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 echo "✅ All integration tests passed."
+
+# 4. Local Secret Scanning (TruffleHog / GitGuardian)
+echo "🔹 Step 4: Running local secret scanning checks..."
+if command -v trufflehog >/dev/null 2>&1; then
+    echo "🔎 TruffleHog detected! Scanning staged changes for secrets..."
+    trufflehog git file://. --since-commit HEAD --only-verified --fail
+    if [ $? -ne 0 ]; then
+        echo "❌ ERROR: Secrets detected in git history/staged changes!"
+        echo "💡 Action: Clean up secrets or add rules before committing."
+        echo "============================================="
+        exit 1
+    fi
+    echo "✅ No secrets detected by TruffleHog."
+elif command -v ggshield >/dev/null 2>&1; then
+    echo "🔎 GitGuardian (ggshield) detected! Scanning staged changes..."
+    ggshield secret scan pre-commit
+    if [ $? -ne 0 ]; then
+        echo "❌ ERROR: GitGuardian flagged potential secrets in staged files!"
+        echo "💡 Action: Remove plain secrets and secure them properly."
+        echo "============================================="
+        exit 1
+    fi
+    echo "✅ No secrets detected by GitGuardian."
+else
+    echo "⚠️ WARNING: Neither TruffleHog nor GitGuardian (ggshield) was found in local PATH."
+    echo "💡 Tip: Install TruffleHog or GitGuardian CLI for local fail-secure scanning."
+fi
 
 echo "============================================="
 echo "🎉 SUCCESS: All checks passed! Proceeding with commit..."

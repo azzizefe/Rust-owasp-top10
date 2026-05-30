@@ -1,0 +1,6 @@
+# ZAP baseline scan rule configuration file
+# Format: <rule-id> <action> <rule-name>
+# Action can be: IGNORE, INFO, WARN, FAIL
+
+10096	IGNORE	Timestamp Disclosure - Unix
+10021	IGNORE	X-Content-Type-Options Header Missing

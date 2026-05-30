@@ -1,0 +1,50 @@
+name: Dynamic Application Security Testing (DAST)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  dast_scan:
+    name: OWASP ZAP Dynamic Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup environment variables needed by docker-compose
+      - name: Create .env File
+        run: |
+          echo "POSTGRES_USER=app" >> .env
+          echo "POSTGRES_PASSWORD=CHANGEME" >> .env
+          echo "POSTGRES_DB=owasp_lab" >> .env
+          echo "APP_MODE=secure" >> .env
+          echo "SESSION_SECRET=CHANGE_ME_64_RANDOM_BYTES_HERE_FOR_SECURITY_REASONS_WHICH_IS_SECURE" >> .env
+          echo "RUST_LOG=info" >> .env
+          echo "SECRETS_PROVIDER=env" >> .env
+
+      - name: Spin Up Docker Compose Environment
+        run: |
+          docker compose up -d --build
+          # Wait for Nginx proxy to start and pass health check
+          sleep 15
+
+      - name: Verify Web Server is Reachable (HTTPS)
+        run: |
+          curl -k -I https://localhost:443/login
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'https://localhost:443/'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          rules_file_name: '.zap/rules.tsv'
+          allow_issue_writing: false
+          fail_action: true # Fail the CI build if vulnerabilities of critical severity are found
+
+      - name: Tear Down Docker Environment
+        if: always()
+        run: docker compose down -v

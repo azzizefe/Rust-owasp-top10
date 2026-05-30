@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main, master ]
   schedule:
-    # Her Pazartesi saat 00:00'da otomatik çalıştır (Security Sweep)
+    # Run every Monday at 00:00 UTC (Security Sweep)
     - cron: '0 0 * * 1'
 
 jobs:
@@ -17,11 +17,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install cargo-audit
-        uses: actions-rs/install@v0.1
+      - name: Run Cargo Audit
+        uses: rustsec/audit-check@v2.0.0
         with:
-          crate: cargo-audit
-          use-tool-cache: true
-
-      - name: Run Vulnerability Scan
-        run: cargo audit
+          token: ${{ secrets.GITHUB_TOKEN }}

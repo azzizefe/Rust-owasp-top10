@@ -58,12 +58,12 @@ pub fn encrypt_cookie(key: &[u8; 32], plaintext: &str) -> String {
     combined.extend_from_slice(&nonce_bytes);
     combined.extend_from_slice(&ciphertext);
 
-    base64::engine::general_purpose::STANDARD.encode(&combined)
+    base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&combined)
 }
 
 /// Base64 kodlu veriyi deşifre eder
 pub fn decrypt_cookie(key: &[u8; 32], base64_ciphertext: &str) -> Result<String, CryptoError> {
-    let combined = base64::engine::general_purpose::STANDARD.decode(base64_ciphertext)?;
+    let combined = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(base64_ciphertext)?;
 
     if combined.len() < 12 {
         return Err(CryptoError::InvalidFormat);
@@ -88,7 +88,7 @@ pub fn sign_cookie(key: &[u8; 32], value: &str) -> String {
         <HmacSha256 as Mac>::new_from_slice(key).expect("HMAC key size is fixed to 32 bytes");
     mac.update(value.as_bytes());
     let result = mac.finalize();
-    let signature = base64::engine::general_purpose::STANDARD.encode(result.into_bytes());
+    let signature = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(result.into_bytes());
 
     format!("{}.{}", value, signature)
 }
@@ -103,7 +103,7 @@ pub fn verify_cookie(key: &[u8; 32], signed_value: &str) -> Result<String, Crypt
     let value = parts[0];
     let signature_b64 = parts[1];
 
-    let signature = base64::engine::general_purpose::STANDARD.decode(signature_b64)?;
+    let signature = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(signature_b64)?;
 
     let mut mac =
         <HmacSha256 as Mac>::new_from_slice(key).expect("HMAC key size is fixed to 32 bytes");

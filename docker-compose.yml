@@ -9,8 +9,10 @@ services:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 5s
       retries: 5
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432" # Removed public port exposure to enforce Zero-Trust network isolation
+    networks:
+      - backend
 
   app:
     build: .
@@ -23,11 +25,54 @@ services:
       BIND_ADDR: 0.0.0.0:8080
       SESSION_SECRET: ${SESSION_SECRET}
       RUST_LOG: ${RUST_LOG}
-    ports:
-      - "8080:8080"
+      # Cloud Secrets Provider (env | vault | aws | doppler)
+      SECRETS_PROVIDER: ${SECRETS_PROVIDER:-env}
+      VAULT_ADDR: ${VAULT_ADDR:-}
+      VAULT_TOKEN: ${VAULT_TOKEN:-}
+      VAULT_MOUNT: ${VAULT_MOUNT:-secret}
+      VAULT_PATH: ${VAULT_PATH:-owasp-lab}
+      DOPPLER_TOKEN: ${DOPPLER_TOKEN:-}
+      AWS_SECRET_NAME: ${AWS_SECRET_NAME:-owasp-lab/production}
+      AWS_REGION: ${AWS_REGION:-eu-west-1}
+    # ports:
+    #   - "8080:8080" # Removed direct access to enforce edge protection through Nginx load balancer
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 5s
+    networks:
+      - frontend
+      - backend
+
+  nginx:
+    build:
+      context: ./nginx
+    restart: always
+    ports:
+      - "80:80"     # HTTP -> HTTPS redirect port
+      - "443:443"   # TLS 1.3 only secure port
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend
+
+  vector:
+    image: timberio/vector:0.36.0-alpine
+    restart: always
+    volumes:
+      - ./vector/vector.toml:/etc/vector/vector.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+

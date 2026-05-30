@@ -5,10 +5,23 @@ use futures::future::BoxFuture;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use sqlx::{Postgres, Transaction};
 use std::time::Duration;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
-pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error> {
+use sqlx::postgres::PgConnectOptions;
+use sqlx::postgres::PgSslMode;
+use std::str::FromStr;
+
+pub async fn connect(url: &str, require_ssl: bool) -> Result<PgPool, sqlx::Error> {
     info!("Veritabanına bağlanılıyor...");
+
+    let mut connect_options = PgConnectOptions::from_str(url)?;
+
+    if require_ssl {
+        info!("🔒 Güvenli Veritabanı Modu: SSL/TLS bağlantısı zorunlu kılınıyor.");
+        connect_options = connect_options.ssl_mode(PgSslMode::Require);
+    } else {
+        warn!("⚠️ Veritabanı bağlantısı şifrelenmemiş (SSL devre dışı). Üretim ortamında kesinlikle etkinleştirin.");
+    }
 
     // 🛡️ GÜVENLİ VE OPTİMİZE BAĞLANTI HAVUZU AYARLARI (Phase 5.2)
     let pool = PgPoolOptions::new()
@@ -17,7 +30,7 @@ pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error> {
         .acquire_timeout(Duration::from_secs(5)) // Bağlantı alamama durumunda max bekleme süresi
         .idle_timeout(Duration::from_secs(600)) // Boştaki bağlantıların kapatılma süresi (10 dk)
         .max_lifetime(Duration::from_secs(1800)) // Bağlantıların maksimum ömrü (30 dk)
-        .connect(url)
+        .connect_with(connect_options)
         .await
         .map_err(|e| {
             error!("Veritabanı bağlantı hatası: {:?}", e);

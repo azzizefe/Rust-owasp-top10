@@ -18,6 +18,7 @@ pub struct AppState {
     pub pool: PgPool,
     pub mode: AppMode,
     pub session_secret: String,
+    pub cookie_secure: bool,
     pub start_time: chrono::DateTime<chrono::Utc>,
 }
 
@@ -37,6 +38,8 @@ pub fn create_router(state: AppState) -> Router {
         )
         // Sağlık kontrolü
         .route("/health", get(health_check))
+        // Prometheus Metrikleri
+        .route("/metrics", get(metrics_handler))
         // Kimlik doğrulama rotaları
         .route(
             "/register",
@@ -102,6 +105,10 @@ pub fn create_router(state: AppState) -> Router {
             })
             .layer(RequestBodyLimitLayer::new(64 * 1024)) // 64KB büyük istek boyutu DoS engeli (OWASP A10:2026)
             .layer(SetResponseHeaderLayer::overriding(
+                header::HeaderName::from_static("strict-transport-security"),
+                header::HeaderValue::from_static("max-age=63072000; includeSubDomains; preload"),
+            ))
+            .layer(SetResponseHeaderLayer::overriding(
                 header::CONTENT_SECURITY_POLICY,
                 header::HeaderValue::from_static(
                     "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; object-src 'none'; base-uri 'self'",
@@ -157,4 +164,37 @@ async fn health_check(State(state): State<AppState>) -> impl axum::response::Int
                 .into_response()
         }
     }
+}
+
+async fn metrics_handler(State(state): State<AppState>) -> impl axum::response::IntoResponse {
+    let pool_size = state.pool.size();
+    let pool_idle = state.pool.num_idle() as u32;
+    let pool_used = pool_size - pool_idle;
+
+    let uptime_secs = (chrono::Utc::now() - state.start_time).num_seconds();
+
+    let body = format!(
+        "# HELP db_pool_connections_max Maximum number of database connections configured\n\
+         # TYPE db_pool_connections_max gauge\n\
+         db_pool_connections_max 10\n\n\
+         # HELP db_pool_connections_active Total number of connections currently opened\n\
+         # TYPE db_pool_connections_active gauge\n\
+         db_pool_connections_active {pool_size}\n\n\
+         # HELP db_pool_connections_idle Number of idle connections in the pool\n\
+         # TYPE db_pool_connections_idle gauge\n\
+         db_pool_connections_idle {pool_idle}\n\n\
+         # HELP db_pool_connections_used Number of active connections currently in use\n\
+         # TYPE db_pool_connections_used gauge\n\
+         db_pool_connections_used {pool_used}\n\n\
+         # HELP app_uptime_seconds Total application uptime in seconds\n\
+         # TYPE app_uptime_seconds counter\n\
+         app_uptime_seconds {uptime_secs}\n"
+    );
+
+    (
+        StatusCode::OK,
+        [("content-type", "text/plain; version=0.0.4; charset=utf-8")],
+        body,
+    )
+        .into_response()
 }

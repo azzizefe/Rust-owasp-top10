@@ -1,0 +1,71 @@
+# vector.toml — Production Log & Audit Collection Configuration
+#
+# Vector, Docker stdout loglarını dinler, JSON formatındaki security_audit loglarını
+# ayrıştırır ve merkezi bir SIEM platformuna (Elasticsearch/Loki/Datadog) yönlendirir.
+
+[sources.docker_logs]
+type = "docker_logs"
+exclude_containers = ["vector"] # Vector'ün kendi loglarını döngüye girmemesi için hariç tut
+
+[transforms.parse_json]
+type = "remap"
+inputs = ["docker_logs"]
+source = """
+# Docker logundaki string mesajı JSON olarak parse et
+parsed, err = parse_json(.message)
+if err != null {
+  # Parse edilemezse ham log olarak bırak ve etiketle
+  .parsed_status = "raw"
+} else {
+  # Başarıyla parse edilirse tüm JSON alanlarını kök seviyeye taşı
+  ., err = merge(., parsed)
+  if err != null {
+    .parsed_status = "merge_error"
+  } else {
+    .parsed_status = "success"
+  }
+}
+"""
+
+# 🛡️ Güvenlik Audit Loglarını Ayır (SIEM Routing)
+[transforms.filter_security_audits]
+type = "filter"
+inputs = ["parse_json"]
+condition = 'includes(string!(.message), "security_audit") || .event_type == "security_audit" || .log_type == "audit"'
+
+# 📊 Genel Sistem ve Uygulama Logları
+[transforms.filter_app_logs]
+type = "filter"
+inputs = ["parse_json"]
+condition = '!includes(string!(.message), "security_audit") && .event_type != "security_audit"'
+
+# ----------------------------------------------------
+# SINKS (Log Yönlendirme ve SIEM Entegrasyonları)
+# ----------------------------------------------------
+
+# 1. Yerel Geliştirme / Hata Ayıklama için Console Çıktısı
+[sinks.console_audit]
+type = "console"
+inputs = ["filter_security_audits"]
+encoding.codec = "json"
+
+# 2. Grafana Loki (SIEM / Merkezi Loglama) - Aktif Edilebilir
+[sinks.loki_siem]
+type = "loki"
+inputs = ["filter_security_audits"]
+endpoint = "http://loki:3100"
+encoding.codec = "json"
+labels.source = "vector"
+labels.environment = "production"
+labels.service = "owasp-web-app"
+labels.log_type = "security_audit"
+
+# 3. Elasticsearch veya OpenSearch Entegrasyonu - Örnek Şablon
+# [sinks.elasticsearch_siem]
+# type = "elasticsearch"
+# inputs = ["filter_security_audits"]
+# endpoints = ["https://elasticsearch.prod.internal:9200"]
+# bulk.index = "owasp-security-audit-%Y.%m.%d"
+# auth.strategy = "basic"
+# auth.user = "${ES_USER}"
+# auth.password = "${ES_PASSWORD}"
