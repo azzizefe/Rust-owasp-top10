@@ -61,3 +61,9 @@
 - [ ] **Katkıda Bulunma Rehberi (`CONTRIBUTING.md`):** Diğer yazılımcıların laboratuvarınıza yeni zafiyet modülleri veya güvenlik yamaları ekleyebilmesi için kodlama standartlarını belirle.
 - [ ] **Issue ve PR Şablonları:** Topluluğun kaliteli hata bildirimi (Bug Report) yapabilmesi için `.github/ISSUE_TEMPLATE` klasörünü ve `PULL_REQUEST_TEMPLATE.md` dosyasını oluştur.
 - [ ] **GitHub Etiketleri (Topics & SEO):** GitHub repo ayarlarından `rust`, `owasp`, `cybersecurity`, `axum`, `devsecops` gibi etiketleri ekleyerek projenin küresel görünürlüğünü (SEO) ve erişimini maksimize et.
+
+## 11. 🧹 Kod Temizliği ve Gizlilik (Code Hygiene & Privacy)
+- [ ] **Kişisel Verilerin Silinmesi:** Kod içerisinde, yorum satırlarında (comments) veya test dosyalarında kalmış olabilecek kişisel e-posta adreslerini, telefon numaralarını veya yerel bilgisayar yollarını (`C:\Users\efe\...` gibi) aratıp temizle.
+- [ ] **Gereksiz Dosya ve Klasörlerin Temizliği:** `.gitignore` dosyasının eksiksiz çalıştığından emin ol. IDE yapılandırmaları (`.vscode`, `.idea`), işletim sistemi artıkları (`.DS_Store`, `Thumbs.db`) veya gereksiz log dosyaları Git'e eklenmişse bunları kaldır.
+- [ ] **"TODO" ve İç Notların Gözden Geçirilmesi:** Kod içerisinde kendinize bıraktığınız geçici `// TODO:`, `// FIXME:` veya "Burası patlıyor, sonra bakılacak" tarzı lokal/kişisel notları profesyonel bir dille İngilizceye çevir veya gereksiz olanları sil.
+- [ ] **Ölü Kod (Dead Code) Temizliği:** Kullanılmayan fonksiyonları, yorum satırına alınmış (commented-out) eski kod bloklarını ve kullanılmayan `use` / `import` tanımlamalarını temizleyerek projenin tertemiz görünmesini sağla.
