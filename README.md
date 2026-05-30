@@ -57,6 +57,20 @@ Unlike basic security demonstrations, this lab integrates cutting-edge security 
   Uses **AES-256-GCM** and **HMAC-SHA256** combined with deterministic HKDF key derivation to protect transport-layer session tokens against theft and tampering.
 * ⚡ **Atomic DB Transactions & Graceful Shutdown (Phase 5 - A05:2026):**
   Utilizes generic Higher-Rank Trait Bounds (HRTB) transaction helper (`with_tx`) guaranteeing atomic operations for user registration and logins, coupled with active `pool.close().await` graceful shutdown and Docker healthchecks.
+* ☁️ **Pluggable Cloud Secrets Provider (A05:2026):**
+  Seamlessly integrates with **AWS Secrets Manager**, **HashiCorp Vault KV v2**, or **Doppler** via feature gates (`vault`, `aws`, `doppler`) and a unified asynchrony trait, resolving database credentials dynamically on launch.
+* 🌐 **Hardened Edge Proxy & TLS 1.3 (A05:2026):**
+  Leverages a custom **Nginx reverse proxy** built to strictly enforce **TLS 1.3 only**, modern high-security cipher suites, immediate HTTP-to-HTTPS 301 redirection, HSTS headers, and isolates the application inside private Docker bridge networks.
+* 🗄️ **Zero-Trust Database Hardening (A01:2026):**
+  Enforces programmatik `sslmode=require` database connections at the application runtime and separates table ownership (DDL/DML) to isolate the database from DDL attacks.
+* 📊 **SIEM Log Routing & Real-Time Alerting (A09:2026):**
+  Integrates a **Vector logging agent** that captures container stdout logs, filters structured security audit JSON, and prepares Grafana Loki/Elasticsearch alert triggers (e.g. Brute-Force & IDOR detection).
+* 📈 **Zero-Dependency Prometheus Metrik HUD:**
+  Features a zero-dependency `/metrics` endpoint exposing real-time connection pool (active/idle/used) and application uptime stats to Prometheus.
+* 🛠️ **Automated DevSecOps Pipeline (CodeQL / DAST / Coverage):**
+  Full CI/CD integration using **GitHub CodeQL SAST**, **OWASP ZAP DAST** baseline scanning on active Docker Compose staging layers, **Cargo Audit** dependency sweeps, and **cargo-tarpaulin** test coverage gates (failing builds below 80%).
+* 🧪 **k6 Stress Testing & Calibration:**
+  Includes a k6 load-testing script to stress-test rate limiters (`scripts/rate_limit_test.js`) and calibrate production scale.
 * 🧪 **100% Automated Proof (E2E Integration Suite):**
   Includes 10 asynchronous End-to-End integration tests (`cargo test`) verifying both successful exploitation in Vulnerable mode and perfect mitigation in Secure mode.
 
