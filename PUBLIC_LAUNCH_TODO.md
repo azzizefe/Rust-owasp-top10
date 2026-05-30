@@ -67,3 +67,9 @@
 - [ ] **Gereksiz Dosya ve Klasörlerin Temizliği:** `.gitignore` dosyasının eksiksiz çalıştığından emin ol. IDE yapılandırmaları (`.vscode`, `.idea`), işletim sistemi artıkları (`.DS_Store`, `Thumbs.db`) veya gereksiz log dosyaları Git'e eklenmişse bunları kaldır.
 - [ ] **"TODO" ve İç Notların Gözden Geçirilmesi:** Kod içerisinde kendinize bıraktığınız geçici `// TODO:`, `// FIXME:` veya "Burası patlıyor, sonra bakılacak" tarzı lokal/kişisel notları profesyonel bir dille İngilizceye çevir veya gereksiz olanları sil.
 - [ ] **Ölü Kod (Dead Code) Temizliği:** Kullanılmayan fonksiyonları, yorum satırına alınmış (commented-out) eski kod bloklarını ve kullanılmayan `use` / `import` tanımlamalarını temizleyerek projenin tertemiz görünmesini sağla.
+
+## 12. 📦 Son Kullanıcı Dağıtımı (End-User Distribution & Pre-Builts)
+- [ ] **Docker Container Registry (GHCR / Docker Hub):** Rust bilmeyen veya kodu derlemekle uğraşmak istemeyen kullanıcılar için, CI/CD hattında (GitHub Actions) projenin Docker imajını otomatik derleyip GitHub Container Registry (veya Docker Hub) üzerine push'la.
+- [ ] **Pre-Compiled Binaries (Hazır Çalıştırılabilir Dosyalar):** GitHub "Releases" sekmesinde her yeni versiyon için Windows (`.exe`), Linux ve macOS (M1/Intel) için önceden derlenmiş (pre-compiled) binary dosyalarını otomatik yayınla.
+- [ ] **Tek Tıkla Kurulum (One-Click Deploy):** İnsanların sistemi saniyeler içinde kendi bulutlarına kurabilmesi için `README.md` içerisine "Deploy to Render", "Deploy to DigitalOcean" veya "Deploy to Heroku" butonları/şablonları ekle.
+- [ ] **Sadece-Kullanıcı (User-Only) Docker Compose:** Geliştiriciler için olan kapsamlı compose dosyası haricinde, sadece `image: ghcr.io/your-username/owasp-lab:latest` kullanan, derleme (`build: .`) gerektirmeyen hafif bir `docker-compose.prod.yml` dosyası sun.
