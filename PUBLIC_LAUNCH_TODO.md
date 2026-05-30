@@ -55,3 +55,9 @@
 - [ ] **Etik Sorumluluk Reddi (Ethical Disclaimer):** Projede yer alan zafiyetli kodlar (Vulnerable Mode) ve exploit scriptleri nedeniyle doğabilecek sorumluluklardan kaçınmak için README.md dosyasındaki "Ethical Disclaimer" başlığının görünürlüğünü doğrula.
 - [ ] **Açık Kaynak Lisansı (MIT/Apache vs):** `LICENSE` dosyasının projenin root dizininde bulunduğunu ve geçerli olduğunu teyit et.
 - [ ] **Proje Sunumu (README Polish):** İnsanlar projeyi ziyaret ettiğinde mimariyi ve kurulumu anında anlayabilsin diye `README.md` dosyasının GitHub Star 🌟 potansiyeline uygun bir düzende formatlandığından emin ol.
+
+## 10. 🛡️ Topluluk ve Açık Kaynak Yönetimi (Community & OS Governance)
+- [ ] **Güvenlik Politikası (`SECURITY.md`):** Beyaz şapkalı (White-Hat) araştırmacıların, kodda bulacakları *kasıtsız* ve gerçek bir zafiyeti herkese açık Issue açmak yerine size özel/gizli olarak nasıl raporlayacaklarını anlatan bir dosya ekle.
+- [ ] **Katkıda Bulunma Rehberi (`CONTRIBUTING.md`):** Diğer yazılımcıların laboratuvarınıza yeni zafiyet modülleri veya güvenlik yamaları ekleyebilmesi için kodlama standartlarını belirle.
+- [ ] **Issue ve PR Şablonları:** Topluluğun kaliteli hata bildirimi (Bug Report) yapabilmesi için `.github/ISSUE_TEMPLATE` klasörünü ve `PULL_REQUEST_TEMPLATE.md` dosyasını oluştur.
+- [ ] **GitHub Etiketleri (Topics & SEO):** GitHub repo ayarlarından `rust`, `owasp`, `cybersecurity`, `axum`, `devsecops` gibi etiketleri ekleyerek projenin küresel görünürlüğünü (SEO) ve erişimini maksimize et.
