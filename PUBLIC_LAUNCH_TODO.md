@@ -49,3 +49,9 @@
 - [ ] **Sıkı CORS Politikaları:** Axum'daki `CorsLayer` yapılandırmasında wildcard (`*`) izinlerini kaldırıp, uygulamanın sadece bilinen ana domainlerine istek izni ver (CSRF/Cross-Origin koruması).
 - [ ] **Yedekleme Geri Yükleme Testi (Disaster Recovery Drill):** Sadece yedek (Snapshot) almakla kalma; periyodik olarak alınan yedeği boş bir AWS RDS / PostgreSQL veritabanına geri yükleyerek verilerin bütünlüğünü doğrula.
 - [ ] **Oturum Zaman Aşımı (Garbage Collection):** Veritabanında biriken eski/süresi dolmuş oturum kayıtlarını temizlemek için periyodik bir PostgreSQL background job veya cron kur (Veritabanı şişmesini ve session hijacking ihtimalini azaltır).
+
+## 9. 🌐 Açık Kaynak Yayınlama (Open Source / Public Repo Release)
+- [ ] **Git Geçmişi Tarama (Ghost Secrets):** TruffleHog veya GitGuardian entegrasyonu *öncesindeki* eski commit'lerde (Git History) hiçbir veritabanı şifresi, AWS API key veya gerçek `.env` datasının unutulmadığından `trufflehog git file://. --only-verified` ile emin ol. Eğer varsa `git filter-repo` ile geçmişi temizle.
+- [ ] **Etik Sorumluluk Reddi (Ethical Disclaimer):** Projede yer alan zafiyetli kodlar (Vulnerable Mode) ve exploit scriptleri nedeniyle doğabilecek sorumluluklardan kaçınmak için README.md dosyasındaki "Ethical Disclaimer" başlığının görünürlüğünü doğrula.
+- [ ] **Açık Kaynak Lisansı (MIT/Apache vs):** `LICENSE` dosyasının projenin root dizininde bulunduğunu ve geçerli olduğunu teyit et.
+- [ ] **Proje Sunumu (README Polish):** İnsanlar projeyi ziyaret ettiğinde mimariyi ve kurulumu anında anlayabilsin diye `README.md` dosyasının GitHub Star 🌟 potansiyeline uygun bir düzende formatlandığından emin ol.
