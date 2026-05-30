@@ -43,3 +43,9 @@
 - [ ] Git main branch'ine sadece CI/CD üzerinden, CodeQL ve OWASP ZAP testleri geçtikten sonra merge izni veren Branch Protection kurallarını aktif et.
 - [ ] Sıfır kesintili (Zero-Downtime) deployment için Blue/Green veya Rolling Update mimarilerini (ECS/EKS veya Docker Swarm) ayarla.
 - [ ] Canlıya aldıktan sonra üretim sunucularına karşı dışarıdan gerçek bir k6 stress testi ve Nmap port taraması çalıştırarak çeperin sağlamlığını doğrula.
+
+## 8. 🛡️ Elite Seviye Zırhlandırma (Staff Engineer Tiers)
+- [ ] **Docker Non-Root Execution:** Dockerfile içerisinde kısıtlı yetkilere sahip bir kullanıcı (`USER appuser`) tanımlayarak uygulamanın root yetkisinde çalışmasını engelle (Container Escape önlemi).
+- [ ] **Sıkı CORS Politikaları:** Axum'daki `CorsLayer` yapılandırmasında wildcard (`*`) izinlerini kaldırıp, uygulamanın sadece bilinen ana domainlerine istek izni ver (CSRF/Cross-Origin koruması).
+- [ ] **Yedekleme Geri Yükleme Testi (Disaster Recovery Drill):** Sadece yedek (Snapshot) almakla kalma; periyodik olarak alınan yedeği boş bir AWS RDS / PostgreSQL veritabanına geri yükleyerek verilerin bütünlüğünü doğrula.
+- [ ] **Oturum Zaman Aşımı (Garbage Collection):** Veritabanında biriken eski/süresi dolmuş oturum kayıtlarını temizlemek için periyodik bir PostgreSQL background job veya cron kur (Veritabanı şişmesini ve session hijacking ihtimalini azaltır).
