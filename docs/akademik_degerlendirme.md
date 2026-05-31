@@ -7,3 +7,16 @@
 3. **Zamanlama Saldırısı (Timing Attack) Kalkanı:** Giriş denemelerinde kullanıcı veritabanında bulunmasa dahi arka planda yapay bir Argon2id parola doğrulama döngüsü (`Dummy Hash Verification`) tetiklenerek sistem yanıt süreleri matematiksel olarak eşitlenmiş ve kullanıcı keşfi (enumeration) engellenmiştir.
 4. **Sıfır-Disk Sır Yönetimi (Zero-Disk Secrets):** Sunucu üzerinde hiçbir düz metin şifre saklanmaz; tüm API/DB kimlik bilgileri AWS Secrets Manager üzerinden şifreli tünelle çekilerek sadece in-memory (RAM) bellekte tutulur ve disk ifşası riski elenir.
 5. **Mühendislik Hijyeni & IaC Olgunluğu:** Tüm altyapı Terraform (IaC) ile otomatik ayağa kaldırılabilir şekilde kodlanmış; derleyici seviyesinde sıfır hata ve sıfır uyarı (`zero-warnings`) tescil edilmiş ve Vector/Loki SIEM alarmları ile gerçek hayata tam uyumlu bir bulut çemberi kurulmuştur.
+
+---
+
+### 🛠️ Sistem Bileşenleri ve Mimari Yapı (Ecosystem Components)
+
+Bu çalışma, teorik anlatımla sınırlı kalmayıp üretime hazır (production-ready) bir bütünsel mimari ekosistem barındırır:
+*   **Rust (Axum & Tokio Engine):** Bellek güvenli (memory-safe) asenkron mikroservis çekirdeği.
+*   **PostgreSQL & SQLx Layer:** Compile-time tip doğrulamalı ve yetki sınırlamalı veri tabanı katmanı.
+*   **Nginx (Edge TLS Proxy):** TLS 1.3 sonlandırma ve Cloudflare IP kısıtlama kalkanı (Real-IP restoration).
+*   **Cloudflare Tunnel (`cloudflared`):** Inbound portları genel internete kapatan Zero-Trust dış ağ izolasyonu.
+*   **Vector Engine (VRL Parser):** Konteyner loglarını parse ederek Loki/SIEM ortamına aktaran veri boru hattı.
+*   **Terraform (Infrastructure as Code):** AWS VPC, ALB, ECS Fargate ve RDS altyapı otomasyonu.
+*   **k6 & Nmap Test Paketleri:** Ağ zırh doğrulaması ve yük dayanıklılık (spike load) test betikleri.
