@@ -50,11 +50,31 @@ services:
     build:
       context: ./nginx
     restart: always
+    # 🔒 Zero-Trust Port Isolation Note:
+    # Production veya tam Zero-Trust modunda, sunucunun inbound portlarını genel internete
+    # kapatmak için aşağıdaki 'ports' eşleşmelerini yorum satırı yapın (comment-out).
+    # Trafik sadece 'cloudflare-tunnel' tüneli üzerinden içeriden dışarıya şifreli akacaktır.
     ports:
       - "80:80"     # HTTP -> HTTPS redirect port
       - "443:443"   # TLS 1.3 only secure port
     depends_on:
       app:
+        condition: service_healthy
+    networks:
+      - frontend
+
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflare/tunnel-config.yml:/etc/cloudflared/config.yml:ro
+      # In production, mount your secure credentials JSON file:
+      # - ./cloudflare/tunnel-credentials.json:/etc/cloudflared/tunnel-credentials.json:ro
+    environment:
+      CLOUDFLARE_TUNNEL_ID: ${CLOUDFLARE_TUNNEL_ID:-}
+    depends_on:
+      nginx:
         condition: service_healthy
     networks:
       - frontend

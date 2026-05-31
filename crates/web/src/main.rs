@@ -60,9 +60,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool_clone = pool.clone();
 
-    if let Err(e) = db::run_migrations(&pool).await {
-        error!("Migration'lar uygulanamadı: {:?}", e);
-        std::process::exit(1);
+    // 🛡️ Principle of Least Privilege: Decouple DDL migrations from application runtime in SECURE mode.
+    // In SECURE mode, the application runs using a low-privileged DML-only user (owasp_app_user).
+    // Schema DDL changes are run prior to deployment in the CI/CD pipeline using owasp_migration_user.
+    if cfg.mode == config::AppMode::Secure {
+        info!("🔒 SECURE Mode: Skipping runtime database migrations (Schema migrations must be run out-of-band in the CI/CD pipeline).");
+    } else {
+        info!("⚠️ VULNERABLE Mode: Running runtime database migrations automatically.");
+        if let Err(e) = db::run_migrations(&pool).await {
+            error!("Migration'lar uygulanamadı: {:?}", e);
+            std::process::exit(1);
+        }
     }
 
     // 4. Mod seçimine göre AuthBackend oluştur

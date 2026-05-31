@@ -14,3 +14,13 @@ node_modules/
 *.sqlite
 *.db
 create_structure.ps1
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+

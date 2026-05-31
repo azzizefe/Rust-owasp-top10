@@ -57,7 +57,18 @@ impl Config {
 
         let mode_str = std::env::var("APP_MODE").unwrap_or_default();
         // Güvenli Varsayılan İlkesi (Secure by Default): Geçersiz veya eksikse 'Secure' mod seçilir
-        let mode = AppMode::from_str(&mode_str).unwrap_or(AppMode::Secure);
+        #[allow(unused_mut)]
+        let mut mode = AppMode::from_str(&mode_str).unwrap_or(AppMode::Secure);
+
+        // 🔒 Fail-Safe / Hardening: Production release environments MUST never run in Vulnerable mode.
+        // Compile-time debug_assertions check protects against compiling/running vulnerable code in production.
+        #[cfg(not(debug_assertions))]
+        {
+            if mode == AppMode::Vulnerable {
+                eprintln!("[⚠️ SECURITY ALERT] Production/Release binary detected! 'vulnerable' mode is strictly forbidden. Overriding APP_MODE to 'secure' (Fail-Safe activated).");
+                mode = AppMode::Secure;
+            }
+        }
 
         if mode == AppMode::Secure
             && (session_secret.is_empty()

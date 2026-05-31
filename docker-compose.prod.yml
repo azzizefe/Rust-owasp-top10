@@ -1,0 +1,80 @@
+# docker-compose.prod.yml — Production/End-User Zero-Build Deployment Orchestration
+#
+# Bu dosya, uygulamayı kendi makinesinde derlemek (build) istemeyen, doğrudan
+# pre-compiled (önceden derlenmiş) Docker imajlarımızı çekerek saniyeler içinde
+# ayağa kaldırmak isteyen son kullanıcılar ve sistem yöneticileri için tasarlanmıştır.
+#
+# Çalıştırma Komutu:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-owasp_secure_db_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-owasp_lab}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      retries: 5
+    networks:
+      - backend
+
+  app:
+    image: ghcr.io/azzizefe/rust-owasp-top10:latest
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-owasp_secure_db_pass_2026}@db:5432/${POSTGRES_DB:-owasp_lab}
+      APP_MODE: ${APP_MODE:-secure}
+      BIND_ADDR: 0.0.0.0:8080
+      SESSION_SECRET: ${SESSION_SECRET:-super_secure_random_bytes_key_64_characters}
+      RUST_LOG: ${RUST_LOG:-info}
+      # Secrets Provider
+      SECRETS_PROVIDER: env
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - frontend
+      - backend
+
+  nginx:
+    image: ghcr.io/azzizefe/rust-owasp-top10-nginx:latest
+    restart: always
+    ports:
+      - "80:80"     # Edge HTTP -> HTTPS Redirect
+      - "443:443"   # Edge TLS 1.3 only
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend
+
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflare/tunnel-config.yml:/etc/cloudflared/config.yml:ro
+    environment:
+      CLOUDFLARE_TUNNEL_ID: ${CLOUDFLARE_TUNNEL_ID:-}
+    depends_on:
+      nginx:
+        condition: service_healthy
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

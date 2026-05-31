@@ -18,7 +18,7 @@ base64 = "0.22"
 # Web Framework
 axum = "0.7"
 tower = "0.4"
-tower-http = { version = "0.5", features = ["limit", "trace", "set-header", "request-id", "util"] }
+tower-http = { version = "0.5", features = ["limit", "trace", "set-header", "request-id", "util", "cors"] }
 tower_governor = "0.3"
 reqwest = { version = "0.12", features = ["json", "cookies"] }
 url = "2.5"
@@ -51,3 +51,13 @@ hmac = "0.12"
 
 # Async & Futures (Phase 5)
 futures = "0.3"
+
+# ==============================================================================
+# 🏗️ HARDENED PRODUCTION RELEASE PROFILE
+# ==============================================================================
+[profile.release]
+opt-level = 3             # Maximize execution speed & general compiler optimizations
+lto = true                # Enable Link-Time Optimization (cross-crate dead-code elimination)
+codegen-units = 1         # Restrict codegen units to 1 for maximum optimization & binary safety
+panic = "abort"           # Abort on panics to minimize binary size & exploit/rewinding surface
+strip = true              # Strip all debug symbols and symbols, preventing reverse engineering

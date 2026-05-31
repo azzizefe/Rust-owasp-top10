@@ -106,19 +106,34 @@ Unlike basic security demonstrations, this lab integrates cutting-edge security 
 
 Getting the lab up and running takes less than two minutes:
 
-### 1. Set Up Environment Variables
-```bash
-# Copy the example configuration
-cp .env.example .env
-```
-*(Open `.env` and change `APP_MODE` to `vulnerable` or `secure` depending on what you want to test).*
+### 🌐 Cloud One-Click Deployments (Tek Tıkla Kurulum)
 
-### 2. Launch with Docker Compose
+Deploy the security lab instantly to your favorite cloud platforms:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render.svg)](https://render.com/deploy?repo=https://github.com/azzizefe/Rust-owasp-top10)
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn.svg)](https://portal.digitalocean.com/apps/new?repo=https://github.com/azzizefe/Rust-owasp-top10)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/azzizefe/Rust-owasp-top10)
+
+### 📦 Option A: Fast End-User Run (Zero Rust Compilation)
+If you don't have Rust installed or want to skip local cargo builds, use our pre-compiled production registry images:
 ```bash
-# Spin up both the PostgreSQL DB and the Rust Web App automatically
-docker compose up --build
+# Spin up both the PostgreSQL DB and pre-compiled Rust/Nginx images automatically
+docker compose -f docker-compose.prod.yml up -d
 ```
-Once the compilation completes, navigate to `http://localhost:8080` in your browser to meet the **Nano Banana** cyber mascot and start testing!
+
+### 🛠️ Option B: Local Developer Launch (Build from Source)
+1. **Set Up Environment Variables**
+   ```bash
+   cp .env.example .env
+   ```
+   *(Open `.env` and change `APP_MODE` to `vulnerable` or `secure` depending on what you want to test).*
+
+2. **Launch Stack**
+   ```bash
+   # Spin up both the PostgreSQL DB and compile the Rust Web App automatically
+   docker compose up --build
+   ```
+Once the compilation or image pull completes, navigate to `http://localhost:8080` in your browser to meet the **Nano Banana** cyber mascot and start testing!
 
 ### 3. Run Automated Integration Tests
 ```bash

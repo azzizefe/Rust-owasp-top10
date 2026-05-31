@@ -1,0 +1,165 @@
+name: 📦 Production Release & Distribution
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags (e.g., v1.0.0)
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # JOB 1: Multi-Platform Pre-Compiled Binaries Compilation
+  # ─────────────────────────────────────────────────────────────
+  build-binaries:
+    name: Compile Binaries (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            suffix: ''
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            suffix: '.exe'
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            suffix: ''
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            suffix: '-arm64'
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Stable Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust Cache Integration
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build Hardened Release Binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package Release Assets (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar -czf ../../../owasp-web-${{ matrix.target }}.tar.gz owasp-web${{ matrix.suffix }}
+          cd -
+
+      - name: Package Release Assets (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar -czf ../../../owasp-web-${{ matrix.target }}.tar.gz owasp-web.exe
+          shell: bash
+
+      - name: Upload Artifacts to Release Pipeline
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.target }}
+          path: owasp-web-${{ matrix.target }}.tar.gz
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 2: Hardened Docker Image Compilation & Push to GHCR
+  # ─────────────────────────────────────────────────────────────
+  build-docker:
+    name: Compile & Push Docker Image (GHCR)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (Multi-platform builds)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ id.meta.outputs.tags }}
+          labels: ${{ id.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 3: Publish GitHub Release with Assets
+  # ─────────────────────────────────────────────────────────────
+  publish-release:
+    name: Publish Release & Assets
+    needs: [build-binaries, build-docker]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Download Linux Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-x86_64-unknown-linux-gnu
+
+      - name: Download Windows Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-x86_64-pc-windows-msvc
+
+      - name: Download macOS x86 Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-x86_64-apple-darwin
+
+      - name: Download macOS ARM Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-aarch64-apple-darwin
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            owasp-web-x86_64-unknown-linux-gnu.tar.gz
+            owasp-web-x86_64-pc-windows-msvc.tar.gz
+            owasp-web-x86_64-apple-darwin.tar.gz
+            owasp-web-aarch64-apple-darwin.tar.gz
+          body: |
+            # 🛡️ Rust OWASP Top 10 Security Lab - ${{ github.ref_name }}
+            
+            Bu sürüm, en yeni güvenlik zırhlandırmaları ve Staff-Engineer-level mimari geliştirmelerle derlenmiş hazır dağıtım paketlerini içerir.
+            
+            ### 📦 Docker Dağıtımı (GHCR)
+            Pre-compiled Docker imajını çekip saniyeler içinde ayağa kaldırmak için:
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:latest
+            ```
+            
+            ### 💻 Hazır Çalıştırılabilir Binary Dosyaları (Pre-Compiled)
+            Aşağıdaki ekli varlıklardan işletim sisteminize uygun olan paketi indirip doğrudan çalıştırabilirsiniz.
+          draft: false
+          prerelease: false

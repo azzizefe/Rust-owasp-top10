@@ -126,6 +126,27 @@ pub fn create_router(state: AppState) -> Router {
                 header::REFERRER_POLICY,
                 header::HeaderValue::from_static("no-referrer"),
             ));
+
+        // 3. Sıkı CORS Politikası (CorsLayer - CSRF/Cross-Origin Koruması)
+        // Wildcard (*) izinlerini kaldırıp, uygulamanın sadece bilinen ana domainlerine izin ver.
+        use axum::http::Method;
+        use tower_http::cors::CorsLayer;
+
+        let allowed_origin = std::env::var("ALLOWED_ORIGIN")
+            .unwrap_or_else(|_| "https://owasp-lab.azzizefe.com".to_string());
+
+        let cors = CorsLayer::new()
+            .allow_origin(
+                allowed_origin
+                    .parse::<axum::http::HeaderValue>()
+                    .unwrap_or_else(|_| {
+                        axum::http::HeaderValue::from_static("https://owasp-lab.azzizefe.com")
+                    }),
+            )
+            .allow_methods([Method::GET, Method::POST])
+            .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]);
+
+        router = router.layer(cors);
     }
 
     router
