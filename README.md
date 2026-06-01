@@ -15,8 +15,8 @@
     <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License">
   </p>
 
-  **Academic Affiliation:** İstinye University - Web Security Final Project<br>
-  **Advisor:** Keyvan Arasteh | **Developer:** Aziz Efe
+  **Academic Affiliation:** İstinye University - Web Security (BGT208) Final Project<br>
+  **Advisor:** Keyvan Arasteh | **Developer:** Aziz Efe (Student ID: 2420191044)
   
   <br>
 </div>
