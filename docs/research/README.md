@@ -1,5 +1,9 @@
 # 🎓 Rust ile Modern Güvenlik Paradigmaları Akademik ve Teknik Araştırma Raporları
 
+**Developer:** Aziz Efe Çırak  
+**Ders kodu:** BGT208  
+**Öğrenci Numarası:** 2420191044  
+
 Bu dizin, **Rust OWASP Top 10 Lab (RustSec-analyzer)** projesinin temelinde yatan bilimsel teorileri, mimari tasarım kararlarını ve siber güvenlik paradigmalarını detaylandıran derinlemesine akademik ve teknik araştırma çalışmalarını içerir. 
 
 Projemiz, geleneksel dinamik yorumlanan dillerde (Node.js, Python) sıklıkla karşılaşılan güvenlik zafiyetlerinin, Rust dilinin **statik tip sistemi**, **sıkı sahiplik (ownership) ve ömür (lifetime) kuralları** ve **derleme zamanı makroları** ile nasıl daha derleme aşamasında (by-design) yok edilebileceğini kanıtlamaktadır.
