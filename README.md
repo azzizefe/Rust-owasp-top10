@@ -1,8 +1,59 @@
-<div translate="no" class="notranslate">
-
 <div align="center">
-  <img src="docs/screenshots/logo.png" alt="Nano Banana Security Mascot" width="180">
-  <br>
+  <a href="https://istinye.edu.tr">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d9/%C4%B0stinye_%C3%9Cniversitesi_logo.svg" alt="Istinye University" width="180"/>
+  </a>
+
+  #  🛡️ Rust OWASP Top 10 (2026 Next-Gen) Security Lab 
+
+</div>
+
+---
+
+
+## 🎓 Instructor / Danışman
+
+| | |
+|---|---|
+| **Name / Ad** | Keyvan Arasteh |
+| **GitHub** | [@keyvanarasteh](https://github.com/keyvanarasteh) |
+| **Email** | [keyvan.arasteh@istinye.edu.tr](mailto:keyvan.arasteh@istinye.edu.tr) |
+| **LinkedIn** | [keyvanarasteh](https://www.linkedin.com/in/keyvanarasteh/) |
+| **Website** | [qline.tech](https://qline.tech) |
+
+---
+
+
+## 👤 Student / Öğrenci
+
+| | |
+|---|---|
+| **Name / Ad Soyad** | Aziz Efe Çırak |
+| **Student ID / Öğrenci No** | 2420191044  |
+
+---
+
+## 📚 Course Information / Ders Bilgileri
+
+| | |
+|---|---|
+| **Course Name / Ders Adı** | Secure Web Development / Güvenli Web Yazılımı Geliştirme |
+| **Course Code / Ders Kodu** | BGT208 |
+| **Credits / Kredi** | 3 ECTS |
+| **Semester / Dönem** | 2025-2026 Spring / 2025-2026 Bahar |
+| **Institution / Üniversite** | [Istinye University](https://istinye.edu.tr) |
+
+---
+
+
+## 📋 Project Overview / Proje Özeti
+**Rust OWASP Top 10 Security Lab**, modern web güvenliği zafiyetlerini ve bunlara karşı geliştirilen kurumsal düzeydeki savunma mekanizmalarını uygulamalı olarak analiz etmek amacıyla tasarlanmış, yüksek performanslı ve zero-trust odaklı bir siber güvenlik laboratuvarıdır. Rust ekosisteminin güçlü bileşenleri (**Axum, SQLx, PostgreSQL, Askama**) ile kurgulanan proje, **Dual-Mode (Çift Modlu) Mimari** yapısına sahiptir.
+
+Tek bir ortam değişkeni (`APP_MODE`) ile dinamik olarak kontrol edilebilen sistem, anında **Vulnerable (Zafiyetli)** moddan **Secure (Güvenli)** moda geçiş yapabilmektedir. Bu sayede, hem saldırı vektörlerinin anatomisi ("Expose First") hem de bu zafiyetlerin derleme zamanı (compile-time) güvenceleri, kriptografik doğrulamalar, zamanlama analizi engellemeleri (timing attack mitigation) ve ağ seviyesinde izolasyonlar gibi gelişmiş mimari paternlerle nasıl sönümleneceği ("Mitigate Next") uçtan uca simüle edilmektedir.
+
+
+
+
+<div translate="no" class="notranslate">
   
   # 🛡️ Rust OWASP Top 10 (2026 Next-Gen) Security Lab
   
@@ -15,11 +66,7 @@
     <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License">
   </p>
 
-  **Academic Affiliation:** İstinye University - Web Security (BGT208) Final Project<br>
-  **Advisor:** Keyvan Arasteh | **Developer:** Aziz Efe (Student ID: 2420191044)
-  
-  <br>
-</div>
+
 
 ---
 
