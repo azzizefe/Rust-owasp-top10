@@ -8,7 +8,7 @@ RUN cargo build --release
 
 # Runtime stage
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libssl3 ca-certificates wget && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -u 10001 appuser
 COPY --from=builder /app/target/release/owasp-web /usr/local/bin/app
 COPY --from=builder /app/migrations /migrations

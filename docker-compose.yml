@@ -25,6 +25,7 @@ services:
       BIND_ADDR: 0.0.0.0:8080
       SESSION_SECRET: ${SESSION_SECRET}
       RUST_LOG: ${RUST_LOG}
+      SKIP_DB_TLS: 'true'
       # Cloud Secrets Provider (env | vault | aws | doppler)
       SECRETS_PROVIDER: ${SECRETS_PROVIDER:-env}
       VAULT_ADDR: ${VAULT_ADDR:-}
@@ -75,7 +76,7 @@ services:
       CLOUDFLARE_TUNNEL_ID: ${CLOUDFLARE_TUNNEL_ID:-}
     depends_on:
       nginx:
-        condition: service_healthy
+        condition: service_started
     networks:
       - frontend
 

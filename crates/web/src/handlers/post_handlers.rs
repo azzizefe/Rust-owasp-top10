@@ -123,27 +123,83 @@ pub async fn fetch_url(
                 Err(_) => return (StatusCode::BAD_REQUEST, "Geçersiz URL formatı").into_response(),
             };
 
-            // Localhost / Özel ağ engeli (Blacklisting)
-            if let Some(host) = parsed_url.host_str() {
-                let h_lower = host.to_lowercase();
-                if h_lower == "localhost"
-                    || h_lower == "127.0.0.1"
-                    || h_lower.starts_with("192.168.")
-                    || h_lower.starts_with("10.")
-                    || h_lower.starts_with("172.16.")
-                {
-                    warn!(
-                        "🔒 SSRF ENGELENDİ: Kullanıcı iç ağdaki adrese ({}) erişmeye çalıştı!",
-                        host
-                    );
-                    return (StatusCode::FORBIDDEN, "İç ağ adreslerine erişim yasaktır.")
+            let scheme = parsed_url.scheme();
+            if scheme != "http" && scheme != "https" {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    "Sadece HTTP ve HTTPS şemalarına izin verilir.",
+                )
+                    .into_response();
+            }
+
+            let host_str = parsed_url.host_str().unwrap_or("");
+            let port = parsed_url.port_or_known_default().unwrap_or(80);
+
+            // DNS Çözümlemesi ile Gerçek IP Adresini Doğrulama (SSRF Bypass Önlemi)
+            let resolved_ips = match tokio::net::lookup_host((host_str, port)).await {
+                Ok(addrs) => {
+                    let mut ips = Vec::new();
+                    for addr in addrs {
+                        ips.push(addr.ip());
+                    }
+                    if ips.is_empty() {
+                        return (StatusCode::BAD_REQUEST, "Sunucu adresi çözümlenemedi.")
+                            .into_response();
+                    }
+                    ips
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        "Geçersiz sunucu adresi veya DNS hatası.",
+                    )
+                        .into_response()
+                }
+            };
+
+            for ip in resolved_ips {
+                if ip.is_loopback() || ip.is_unspecified() || ip.is_multicast() {
+                    warn!("🔒 SSRF ENGELENDİ: Özel IP tespit edildi ({})", ip);
+                    return (
+                        StatusCode::FORBIDDEN,
+                        "Özel ve yerel IP adreslerine erişim yasaktır.",
+                    )
                         .into_response();
+                }
+
+                // RFC 1918 Private IP & RFC 3927 Link-Local IPv4 Kontrolleri
+                match ip {
+                    std::net::IpAddr::V4(ipv4) => {
+                        let octets = ipv4.octets();
+                        if octets[0] == 10
+                            || (octets[0] == 172 && octets[1] >= 16 && octets[1] <= 31)
+                            || (octets[0] == 192 && octets[1] == 168)
+                            || (octets[0] == 169 && octets[1] == 254)
+                        {
+                            warn!("🔒 SSRF ENGELENDİ: İç ağ IP adresi tespit edildi ({})", ip);
+                            return (StatusCode::FORBIDDEN, "İç ağ adreslerine erişim yasaktır.")
+                                .into_response();
+                        }
+                    }
+                    std::net::IpAddr::V6(ipv6) => {
+                        let segments = ipv6.segments();
+                        if (segments[0] & 0xfe00) == 0xfc00 || (segments[0] & 0xffc0) == 0xfe80 {
+                            warn!(
+                                "🔒 SSRF ENGELENDİ: İç ağ IPv6 adresi tespit edildi ({})",
+                                ip
+                            );
+                            return (StatusCode::FORBIDDEN, "İç ağ adreslerine erişim yasaktır.")
+                                .into_response();
+                        }
+                    }
                 }
             }
 
-            // Güvenli istek atımı
+            // Güvenli istek atımı ve Redirect Koruması (OWASP A01:2026 - SSRF)
+            // Open Redirect veya yönlendirme ile localhost'a atlamayı engellemek için redirect kapatılır
             let client = match reqwest::Client::builder()
                 .timeout(std::time::Duration::from_secs(3))
+                .redirect(reqwest::redirect::Policy::none())
                 .build()
             {
                 Ok(c) => c,
@@ -167,7 +223,7 @@ pub async fn fetch_url(
                     warn!("İstek başarısız oldu: {:?}", e);
                     (
                         StatusCode::BAD_GATEWAY,
-                        "İstek gönderilen adres yanıt vermedi.",
+                        "İstek gönderilen adres yanıt vermedi veya yönlendirme yapılmaya çalışıldı.",
                     )
                         .into_response()
                 }

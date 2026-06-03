@@ -49,7 +49,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // 3. Veritabanı bağlantısı kur ve şemaları migrate et
-    let require_ssl = cfg.mode == config::AppMode::Secure;
+    let skip_tls = std::env::var("SKIP_DB_TLS").unwrap_or_default() == "true";
+    let require_ssl = cfg.mode == config::AppMode::Secure && !skip_tls;
     let pool = match db::connect(&cfg.database_url, require_ssl).await {
         Ok(p) => p,
         Err(e) => {
