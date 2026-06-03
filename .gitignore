@@ -24,3 +24,8 @@ create_structure.ps1
 *.sln
 *.sw?
 
+# Virtual Environments
+venv/
+.venv/
+
+
