@@ -1,0 +1,21 @@
+# 🛡️ Custom Rust Security & Quality Rules for OWASP Lab
+rules:
+  - id: avoid-unwrap-production
+    patterns:
+      - pattern: $X.unwrap()
+      - pattern-not-inside: |
+          fn main() { ... }
+      - pattern-not-inside: |
+          #[test]
+          fn $TEST() { ... }
+    message: "Avoid using unwrap() in production code. Use expect() with a clear context or safely handle errors using map_err or the '?' operator to prevent unexpected server panic DoS (A10:2026)."
+    languages: [rust]
+    severity: WARNING
+
+  - id: detect-raw-sql-concat-injection
+    patterns:
+      - pattern: format!($QUERY, ...)
+      - pattern-regex: "(?i)(select|insert|update|delete|from|where)"
+    message: "Raw SQL string concatenation detected. This is a potential SQL Injection (A03:2026) vector. Ensure compile-time verified sqlx::query! or parameterized queries are utilized instead."
+    languages: [rust]
+    severity: ERROR

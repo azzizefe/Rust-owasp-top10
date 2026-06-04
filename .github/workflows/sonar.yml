@@ -1,0 +1,76 @@
+name: 🚀 SonarCloud Code Analysis
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: CHANGEME
+          POSTGRES_DB: owasp_lab
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install SQLx CLI
+        run: cargo install sqlx-cli --no-default-features --features postgres
+
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: postgres://app:CHANGEME@localhost:5432/owasp_lab
+        run: sqlx database setup
+
+      - name: Install Cargo Tarpaulin
+        run: cargo install cargo-tarpaulin || true
+
+      - name: Run Clippy & Generate JSON Report
+        run: cargo clippy --workspace --message-format=json > clippy-report.json || true
+
+      - name: Generate Code Coverage (Cobertura XML)
+        env:
+          DATABASE_URL: postgres://app:CHANGEME@localhost:5432/owasp_lab
+        run: cargo tarpaulin --out Xml --output-dir . --workspace
+
+      - name: Rename Tarpaulin XML to Cobertura
+        # cargo-tarpaulin output format XML is named 'cobertura.xml' by default in output-dir
+        # but we ensure it matches the name configured in sonar-project.properties
+        run: |
+          if [ -f "cobertura.xml" ]; then
+            echo "cobertura.xml generated successfully."
+          elif [ -f "tarpaulin-report.xml" ]; then
+            mv tarpaulin-report.xml cobertura.xml
+          fi
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

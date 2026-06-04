@@ -217,9 +217,12 @@ If you found this interactive Rust Security Lab educational or useful, please su
 
 ---
 
-## ⚖️ Ethical Disclaimer
+## ⚖️ Ethical Disclaimer & Legal Notice / Etik Sorumluluk Reddi
 
-This security lab is intended **solely for local educational, academic research, and defensive training purposes**. Executing these exploits against unauthorized external systems is illegal. The developer and advisors assume no liability for misuse. Always practice responsible disclosure.
+> [!WARNING]  
+> **English:** This security laboratory contains intentional vulnerabilities and executable exploit scripts (under `exploits/`) designed **solely for local educational, academic research, and defensive training purposes**. Executing these tools or techniques against unauthorized external systems is strictly illegal. The developer, instructor, and institution assume no liability for any misuse or damage caused by this project. Always practice responsible disclosure.
+>
+> **Türkçe:** Bu güvenlik laboratuvarı, **yalnızca yerel eğitim, akademik araştırma ve savunma odaklı eğitim amaçları** için tasarlanmış kasıtlı zafiyetler ve çalıştırılabilir exploit scriptleri (`exploits/` altında) içermektedir. Bu araçların veya tekniklerin yetkisiz harici sistemlere karşı uygulanması kesinlikle yasa dışıdır. Geliştirici, danışman ve ilgili kurum, bu projenin kötüye kullanılmasından veya yol açabileceği zararlardan hiçbir şekilde sorumluluk kabul etmez. Her zaman sorumlu açıklama (responsible disclosure) ilkelerine uyun.
 
 ---
 

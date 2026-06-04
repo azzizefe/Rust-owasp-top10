@@ -1,0 +1,28 @@
+name: 🛡️ Semgrep SAST Quality Gate
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  semgrep:
+    name: Semgrep Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Semgrep CI Scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          generateSafefixes: true
+          config: "p/default p/rust p/owasp-top-10 p/jwt p/secrets .semgrep/"
+        env:
+          # Fail-fast on vulnerabilities with critical or high severity
+          SEMGREP_RULES: "p/default p/rust p/owasp-top-10"

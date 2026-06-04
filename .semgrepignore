@@ -1,0 +1,9 @@
+# Exclude directories with intentional vulnerabilities
+tests/
+exploits/
+target/
+
+# Exclude specific vulnerable module files to prevent false-positive blockages in CI
+**/vulnerable.rs
+crates/core/src/auth/vulnerable.rs
+crates/web/src/handlers/auth_handlers.rs.bk
