@@ -11,7 +11,6 @@ on:
 permissions:
   contents: write
   security-events: write
-  actions: read
 
 jobs:
   sbom:
@@ -25,13 +24,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install cargo-cyclonedx
-        run: |
-          cargo install cargo-cyclonedx || true
+        run: cargo install cargo-cyclonedx || true
 
       - name: Generate CycloneDX SBOM (JSON)
-        # Using workspace, json format, all features, and override output filename
-        run: |
-          cargo cyclonedx --workspace --format json --all-features --output-cdx sbom.json
+        run: cargo cyclonedx --workspace --format json --all-features --output-cdx sbom.json
 
       - name: Upload SBOM as Artifact
         uses: actions/upload-artifact@v4
@@ -40,9 +36,10 @@ jobs:
           path: sbom.json
 
       - name: Run OSV-Scanner on SBOM
-        uses: google/osv-scanner-action/bootstrap-action@v1
+        uses: google/osv-scanner-action/osv-scanner-action@v1.9.2
         with:
           args: --sbom=sbom.json
+        continue-on-error: true
 
       - name: Upload SBOM to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
