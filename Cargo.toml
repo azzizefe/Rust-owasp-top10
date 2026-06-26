@@ -24,7 +24,7 @@ reqwest = { version = "0.12", features = ["json", "cookies"] }
 url = "2.5"
 
 # Templating
-askama = "0.12"
+askama = "0.16"
 askama_axum = "0.4"
 
 # Async Runtime
