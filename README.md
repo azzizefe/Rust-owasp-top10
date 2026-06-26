@@ -1,13 +1,15 @@
   # 🛡️ Rust OWASP Top 10 (2026 Next-Gen) Security Lab
   
-  <p align="center">
-    <a href="https://github.com/azzizefe/Rust-owasp-top10/stargazers"><img src="https://img.shields.io/github/stars/azzizefe/Rust-owasp-top10?style=for-the-badge&color=yellow" alt="Stars"></a>
-    <img src="https://img.shields.io/badge/Language-Rust-orange?style=for-the-badge&logo=rust" alt="Rust">
-    <img src="https://img.shields.io/badge/Framework-Axum-brightgreen?style=for-the-badge&logo=rust" alt="Axum">
-    <img src="https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
-    <img src="https://img.shields.io/badge/OWASP--Top%2010-2026-red?style=for-the-badge" alt="OWASP Top 10">
-    <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License">
-  </p>
+<p align="center">
+  <a href="https://github.com/azzizefe/Rust-owasp-top10/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/azzizefe/Rust-owasp-top10/ci.yml?style=for-the-badge&label=CI" alt="CI"></a>
+  <a href="https://github.com/azzizefe/Rust-owasp-top10/stargazers"><img src="https://img.shields.io/github/stars/azzizefe/Rust-owasp-top10?style=for-the-badge&color=yellow" alt="Stars"></a>
+  <img src="https://img.shields.io/badge/Language-Rust-orange?style=for-the-badge&logo=rust" alt="Rust">
+  <img src="https://img.shields.io/badge/Framework-Axum-brightgreen?style=for-the-badge&logo=rust" alt="Axum">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/OWASP--Top%2010-2026-red?style=for-the-badge" alt="OWASP Top 10">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License">
+  <a href="https://github.com/azzizefe/Rust-owasp-top10/blob/main/SECURITY.md"><img src="https://img.shields.io/badge/Security-Policy-green?style=for-the-badge" alt="Security Policy"></a>
+</p>
 
 
 
@@ -96,22 +98,13 @@ Unlike basic security demonstrations, this lab integrates cutting-edge security 
 
 Getting the lab up and running takes less than two minutes:
 
-### 🌐 Cloud One-Click Deployments (Tek Tıkla Kurulum)
-
-Deploy the security lab instantly to your favorite cloud platforms:
-
-[![Deploy to Render](https://render.com/images/deploy-to-render.svg)](https://render.com/deploy?repo=https://github.com/azzizefe/Rust-owasp-top10)
-[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn.svg)](https://portal.digitalocean.com/apps/new?repo=https://github.com/azzizefe/Rust-owasp-top10)
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/azzizefe/Rust-owasp-top10)
-
-### 📦 Option A: Fast End-User Run (Zero Rust Compilation)
-If you don't have Rust installed or want to skip local cargo builds, use our pre-compiled production registry images:
+### 📦 Option A: Pre-Compiled Docker (Zero Rust Toolchain)
 ```bash
-# Spin up both the PostgreSQL DB and pre-compiled Rust/Nginx images automatically
+# Pull pre-built images and start PostgreSQL + Rust/Nginx stack
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-### 🛠️ Option B: Local Developer Launch (Build from Source)
+### 🛠️ Option B: Local Developer Build (Compile from Source)
 1. **Set Up Environment Variables**
    ```bash
    cp .env.example .env
@@ -163,14 +156,20 @@ If you found this interactive Rust Security Lab educational or useful, please su
 ## ⚖️ Ethical Disclaimer & Legal Notice / Etik Sorumluluk Reddi
 
 > [!WARNING]  
-> **English:** This security laboratory contains intentional vulnerabilities and executable exploit scripts (under `exploits/`) designed **solely for local educational, academic research, and defensive training purposes**. Executing these tools or techniques against unauthorized external systems is strictly illegal. The developer, instructor, and institution assume no liability for any misuse or damage caused by this project. Always practice responsible disclosure.
+> **English:** This security laboratory contains intentional vulnerabilities and executable exploit scripts (under `exploits/`) designed **solely for local educational, academic research, and defensive training purposes**. Executing these tools or techniques against unauthorized external systems is strictly illegal. The developer assumes no liability for any misuse or damage caused by this project. Always practice responsible disclosure.
 >
-> **Türkçe:** Bu güvenlik laboratuvarı, **yalnızca yerel eğitim, akademik araştırma ve savunma odaklı eğitim amaçları** için tasarlanmış kasıtlı zafiyetler ve çalıştırılabilir exploit scriptleri (`exploits/` altında) içermektedir. Bu araçların veya tekniklerin yetkisiz harici sistemlere karşı uygulanması kesinlikle yasa dışıdır. Geliştirici, danışman ve ilgili kurum, bu projenin kötüye kullanılmasından veya yol açabileceği zararlardan hiçbir şekilde sorumluluk kabul etmez. Her zaman sorumlu açıklama (responsible disclosure) ilkelerine uyun.
+> **Türkçe:** Bu güvenlik laboratuvarı, **yalnızca yerel eğitim, akademik araştırma ve savunma odaklı eğitim amaçları** için tasarlanmış kasıtlı zafiyetler ve çalıştırılabilir exploit scriptleri (`exploits/` altında) içermektedir. Bu araçların veya tekniklerin yetkisiz harici sistemlere karşı uygulanması kesinlikle yasa dışıdır. Geliştirici, bu projenin kötüye kullanılmasından veya yol açabileceği zararlardan hiçbir şekilde sorumluluk kabul etmez. Her zaman sorumlu açıklama (responsible disclosure) ilkelerine uyun.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-</div>
+---
+
+## 🔗 Related Documentation
+
+- [SECURITY.md](SECURITY.md) — Responsible disclosure policy & vulnerability reporting
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Contribution guidelines & PR process
+- [ROADMAP.md](ROADMAP.md) — Development roadmap & research methodology (Türkçe)
