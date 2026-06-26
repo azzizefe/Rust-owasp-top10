@@ -59,10 +59,11 @@ jobs:
           DATABASE_URL: postgres://app:CHANGEME@localhost:5432/owasp_lab
         run: cargo test --workspace
 
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+
       - name: Run Code Coverage Check (Tarpaulin)
-        uses: xd009642/tarpaulin-action@v1
-        with:
-          args: '--workspace --fail-under 80'
+        run: cargo tarpaulin --workspace --fail-under 80 --out Html --out Xml
 
       - name: Production Release Build
         env:

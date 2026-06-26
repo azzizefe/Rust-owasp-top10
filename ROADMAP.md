@@ -1,6 +1,6 @@
 # 🗺️ Öğrenme ve Araştırma Yolculuğu Yol Haritası (ROADMAP)
 
-Bu belge, **İstinye Üniversitesi BGT208 - Güvenli Web Yazılımı Geliştirme (Secure Web Development)** dersi kapsamında **Aziz Efe Çırak** tarafından hazırlanan **Rust OWASP Top 10 Security Lab** projesinin gelişim adımlarını ve araştırma metodolojisini detaylandırmaktadır.
+**Aziz Efe Çırak** tarafından hazırlanan **Rust OWASP Top 10 Security Lab** projesinin gelişim adımlarını ve araştırma metodolojisini detaylandırmaktadır.
 
 ---
 
@@ -8,15 +8,6 @@ Bu belge, **İstinye Üniversitesi BGT208 - Güvenli Web Yazılımı Geliştirme
 
 > 💡 **"Önce anla, sonra kodla."**  
 > Büyük ve karmaşık problemleri küçük, sıralı bölümlere ayır. Bir dedektif gibi düşün: gözlemle, ham veriyi çevir, desenleri tespit et, raporla.
-
----
-
-## 🎓 Akademik ve Proje Bağlamı
-
-- **Ders:** Güvenli Web Yazılımı Geliştirme (BGT208)
-- **Danışman / Eğitmen:** Keyvan Arasteh
-- **Öğrenci:** Aziz Efe Çırak (2420191044)
-- **Kurum:** İstinye Üniversitesi
 
 ---
 
