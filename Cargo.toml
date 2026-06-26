@@ -16,7 +16,7 @@ rand = "0.8"
 base64 = "0.22"
 
 # Web Framework
-axum = "0.7"
+axum = "0.8"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["limit", "trace", "set-header", "request-id", "util", "cors"] }
 tower_governor = "0.3"
